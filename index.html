@@ -242,6 +242,27 @@
             width: 100%;
         }
 
+        .nav-menu a.nav-notion {
+            color: var(--bg-main);
+            background: var(--neon-blue);
+            padding: 0.4rem 1rem;
+            border-radius: 6px;
+            font-size: 0.75rem;
+            letter-spacing: 0.05em;
+            transition: all 0.3s ease;
+        }
+
+        .nav-menu a.nav-notion::after {
+            display: none;
+        }
+
+        .nav-menu a.nav-notion:hover {
+            color: var(--bg-main);
+            background: var(--neon-purple);
+            text-shadow: none;
+            box-shadow: 0 0 12px var(--neon-purple);
+        }
+
         /* Dark Mode Toggle */
         .theme-toggle {
             background: var(--bg-light);
@@ -1653,7 +1674,7 @@
                     <li><a href="#projects">Projects</a></li>
                     <li><a href="#documents">Docs</a></li>
                     <li><a href="#ai-showcase" style="color:var(--neon-pink);">🤖 AI</a></li>
-                    <li><a href="#contact">Contact</a></li>
+                    <li><a href="https://lix-chang.notion.site/YJ-s-Portfolio-d4cd000f7370459c842dc4bf513d8c44" target="_blank" class="nav-notion">Notion</a></li>
                 </ul>
                 <button class="theme-toggle" onclick="toggleTheme()">
                     <span class="theme-toggle-icon" id="themeIcon">🌙</span>
@@ -1692,11 +1713,6 @@
                     </div>
                 </div>
 
-                <div class="hero-buttons">
-                    <a href="https://lix-chang.notion.site/YJ-s-Portfolio-d4cd000f7370459c842dc4bf513d8c44"
-                        target="_blank" class="btn btn-primary">📔 VIEW PORTFOLIO</a>
-                    <a href="#experience" class="btn btn-secondary">⚔️ VIEW STATS</a>
-                </div>
             </div>
         </div>
     </section>
@@ -2060,21 +2076,21 @@
             <h2 class="section-title">📚 Design Documents</h2>
             <p class="section-subtitle">실제 프로젝트에서 작성한 기획서 샘플입니다</p>
             <div class="documents-grid">
-                <a href="assets/0101_NCT_Resonance_Puzzle.pdf"
+                <a href="0101_NCT_Resonance_Puzzle.pdf"
                     target="_blank" class="document-card">
                     <div class="document-icon">🧩</div>
                     <h3>퍼즐 시스템</h3>
                     <p>NCTZ | Puzzle System</p>
                     <span class="document-type">System Design</span>
                 </a>
-                <a href="assets/FB_FeverMode.pdf"
+                <a href="FB_FeverMode.pdf"
                     target="_blank" class="document-card">
                     <div class="document-icon">⚙️</div>
                     <h3>시스템 디자인</h3>
                     <p>FB Fever Mode</p>
                     <span class="document-type">System Design</span>
                 </a>
-                <a href="assets/MF_Event.pdf"
+                <a href="MF_Event.pdf"
                     target="_blank" class="document-card">
                     <div class="document-icon">🎮</div>
                     <h3>이벤트 기획</h3>
@@ -2217,24 +2233,6 @@
         </div>
     </section>
 
-    <!-- Contact Section -->
-    <section id="contact" class="contact">
-        <div class="container">
-            <div class="contact-content">
-                <h2 class="section-title">📬 Contact</h2>
-                <p class="contact-description">
-                    게임 기획 및 협업 문의는 언제든지 환영합니다.<br>
-                    아래 버튼을 클릭하여 전체 포트폴리오를 확인하실 수 있습니다.
-                </p>
-                <div class="contact-buttons">
-                    <a href="https://lix-chang.notion.site/YJ-s-Portfolio-d4cd000f7370459c842dc4bf513d8c44"
-                        target="_blank" class="btn btn-primary btn-large">
-                        📔 VIEW FULL PORTFOLIO
-                    </a>
-                </div>
-            </div>
-        </div>
-    </section>
 
     <!-- Footer -->
     <footer class="footer">
