@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="ko">
 
 <head>
@@ -1167,6 +1167,284 @@
             font-family: 'Orbitron', sans-serif;
         }
 
+        /* ── AI Showcase Section ── */
+        .ai-showcase {
+            background: rgba(10, 10, 28, 0.92);
+            border-top: 1px solid rgba(224, 96, 138, 0.3);
+            border-bottom: 1px solid rgba(96, 184, 214, 0.3);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .ai-showcase::before {
+            content: 'AI';
+            position: absolute;
+            right: -2rem;
+            top: 50%;
+            transform: translateY(-50%);
+            font-size: 18rem;
+            font-family: 'Orbitron', sans-serif;
+            font-weight: 900;
+            color: rgba(224, 96, 138, 0.04);
+            pointer-events: none;
+            line-height: 1;
+        }
+
+        [data-theme="dark"] .ai-showcase {
+            background: rgba(8, 8, 20, 0.94);
+        }
+
+        .ai-section-header {
+            display: flex;
+            align-items: center;
+            gap: 1.5rem;
+            margin-bottom: 0.75rem;
+            flex-wrap: wrap;
+        }
+
+        .ai-section-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.4rem;
+            padding: 0.4rem 1rem;
+            background: linear-gradient(135deg, rgba(224,96,138,0.15), rgba(96,184,214,0.15));
+            border: 1px solid rgba(224,96,138,0.5);
+            border-radius: 20px;
+            font-size: 0.7rem;
+            font-weight: 700;
+            color: var(--neon-pink);
+            font-family: 'Orbitron', sans-serif;
+            letter-spacing: 1px;
+            animation: pulseBorder 2.5s ease-in-out infinite;
+        }
+
+        @keyframes pulseBorder {
+            0%, 100% { box-shadow: 0 0 8px rgba(224,96,138,0.3); }
+            50%       { box-shadow: 0 0 22px rgba(224,96,138,0.7); }
+        }
+
+        .ai-report-card {
+            background: var(--bg-card);
+            border-radius: 20px;
+            overflow: hidden;
+            display: grid;
+            grid-template-columns: 1fr 1.6fr;
+            gap: 0;
+            border: 1px solid rgba(96,184,214,0.2);
+            transition: all 0.4s ease;
+            position: relative;
+        }
+
+        .ai-report-card:hover {
+            transform: translateY(-6px);
+            border-color: rgba(224,96,138,0.5);
+            box-shadow: 0 20px 60px rgba(224,96,138,0.15), 0 0 40px rgba(96,184,214,0.1);
+        }
+
+        .ai-card-preview {
+            background: linear-gradient(145deg, #080810, #0d0d20, #120818);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 2.5rem 2rem;
+            position: relative;
+            overflow: hidden;
+            min-height: 280px;
+        }
+
+        .ai-card-preview::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background:
+                radial-gradient(circle at 30% 40%, rgba(224,96,138,0.18) 0%, transparent 55%),
+                radial-gradient(circle at 75% 65%, rgba(96,184,214,0.14) 0%, transparent 50%);
+        }
+
+        .ai-preview-title {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 1.6rem;
+            font-weight: 900;
+            color: #fff;
+            text-align: center;
+            line-height: 1.2;
+            position: relative;
+            z-index: 1;
+            margin-bottom: 0.5rem;
+            text-shadow: 0 0 30px rgba(224,96,138,0.6);
+        }
+
+        .ai-preview-sub {
+            font-size: 0.7rem;
+            color: rgba(96,184,214,0.8);
+            text-align: center;
+            position: relative;
+            z-index: 1;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            margin-bottom: 1.5rem;
+        }
+
+        .ai-slide-dots {
+            display: flex;
+            gap: 5px;
+            position: relative;
+            z-index: 1;
+        }
+
+        .ai-slide-dots span {
+            width: 22px;
+            height: 4px;
+            border-radius: 2px;
+            background: rgba(255,255,255,0.15);
+        }
+
+        .ai-slide-dots span:first-child {
+            background: var(--neon-pink);
+            box-shadow: 0 0 8px var(--neon-pink);
+        }
+
+        .ai-card-info {
+            padding: 2.5rem;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+        }
+
+        .ai-badge-row {
+            display: flex;
+            gap: 0.5rem;
+            flex-wrap: wrap;
+            margin-bottom: 1.25rem;
+        }
+
+        .ai-badge {
+            padding: 0.25rem 0.75rem;
+            border-radius: 12px;
+            font-size: 0.65rem;
+            font-weight: 700;
+            font-family: 'Orbitron', sans-serif;
+            letter-spacing: 0.5px;
+        }
+
+        .ai-badge.ai-made {
+            background: linear-gradient(135deg, #E040FB, #E0608A);
+            color: #fff;
+            box-shadow: 0 0 14px rgba(224,64,251,0.5);
+        }
+
+        .ai-badge.tool {
+            background: rgba(96,184,214,0.1);
+            color: var(--neon-blue);
+            border: 1px solid rgba(96,184,214,0.3);
+        }
+
+        .ai-card-title {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 1.4rem;
+            font-weight: 700;
+            color: var(--text-primary);
+            margin-bottom: 0.75rem;
+            line-height: 1.3;
+        }
+
+        .ai-card-desc {
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+            line-height: 1.7;
+            margin-bottom: 1.5rem;
+        }
+
+        .ai-workflow {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            flex-wrap: wrap;
+            margin-bottom: 1.75rem;
+            padding: 0.85rem 1rem;
+            background: rgba(96,184,214,0.05);
+            border-radius: 10px;
+            border: 1px solid rgba(96,184,214,0.12);
+        }
+
+        .ai-workflow-step {
+            font-size: 0.7rem;
+            color: var(--neon-blue);
+            font-family: 'Orbitron', sans-serif;
+            font-weight: 600;
+            white-space: nowrap;
+        }
+
+        .ai-workflow-arrow {
+            color: rgba(96,184,214,0.4);
+            font-size: 0.75rem;
+        }
+
+        .ai-card-footer {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 1rem;
+        }
+
+        .ai-stats {
+            display: flex;
+            gap: 1.5rem;
+        }
+
+        .ai-stat strong {
+            display: block;
+            font-size: 1.1rem;
+            font-family: 'Orbitron', sans-serif;
+            font-weight: 700;
+            color: var(--neon-pink);
+        }
+
+        .ai-stat span {
+            font-size: 0.65rem;
+            color: var(--text-secondary);
+        }
+
+        .ai-view-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.75rem 1.5rem;
+            background: linear-gradient(135deg, rgba(224,96,138,0.15), rgba(96,184,214,0.15));
+            border: 1px solid rgba(224,96,138,0.5);
+            border-radius: 10px;
+            color: var(--neon-pink);
+            font-family: 'Orbitron', sans-serif;
+            font-size: 0.75rem;
+            font-weight: 700;
+            text-decoration: none;
+            letter-spacing: 1px;
+            transition: all 0.3s ease;
+        }
+
+        .ai-view-btn:hover {
+            background: linear-gradient(135deg, rgba(224,96,138,0.3), rgba(96,184,214,0.2));
+            box-shadow: 0 0 24px rgba(224,96,138,0.4);
+            transform: translateX(3px);
+        }
+
+        .ai-view-btn svg {
+            width: 14px;
+            height: 14px;
+            transition: transform 0.3s ease;
+        }
+
+        .ai-view-btn:hover svg {
+            transform: translateX(3px);
+        }
+
+        @media (max-width: 768px) {
+            .ai-report-card { grid-template-columns: 1fr; }
+            .ai-card-preview { min-height: 180px; }
+        }
+
         /* Responsive Design */
         @media (max-width: 768px) {
 
@@ -1374,6 +1652,7 @@
                     <li><a href="#experience">Career</a></li>
                     <li><a href="#projects">Projects</a></li>
                     <li><a href="#documents">Docs</a></li>
+                    <li><a href="#ai-showcase" style="color:var(--neon-pink);">🤖 AI</a></li>
                     <li><a href="#contact">Contact</a></li>
                 </ul>
                 <button class="theme-toggle" onclick="toggleTheme()">
@@ -1548,7 +1827,7 @@
                     </div>
                 </div>
 
-                <!-- Nines Multimedia -->
+                <!-- 9sltd -->
                 <div class="timeline-item">
                     <div class="timeline-marker"></div>
                     <div class="timeline-content">
@@ -1558,7 +1837,7 @@
                         </div>
                         <div class="timeline-header">
                             <div>
-                                <h3>Nines Multimedia</h3>
+                                <h3>9sltd</h3>
                                 <span class="position">Game Designer</span>
                             </div>
                             <span class="period">2018.03 ~ 2019.06</span>
@@ -1781,14 +2060,21 @@
             <h2 class="section-title">📚 Design Documents</h2>
             <p class="section-subtitle">실제 프로젝트에서 작성한 기획서 샘플입니다</p>
             <div class="documents-grid">
-                <a href="https://file.notion.so/f/f/58b5f648-6212-4518-b010-81db48c64910/c4048587-68ef-4151-8e00-cacfa7251e1d/FB_FeverMode.pdf?table=block&id=0402450a-5dfa-43e4-8413-25a4e2d308a5&spaceId=58b5f648-6212-4518-b010-81db48c64910&expirationTimestamp=1770811200000&signature=6TU0sxtp0babAyHY1k5pKnx2cTb29TkS_p1y0wiSKww&downloadName=FB_FeverMode.pdf"
+                <a href="0101_NCT_Resonance_Puzzle.pdf"
+                    target="_blank" class="document-card">
+                    <div class="document-icon">🧩</div>
+                    <h3>퍼즐 시스템</h3>
+                    <p>NCTZ | Puzzle System</p>
+                    <span class="document-type">System Design</span>
+                </a>
+                <a href="FB_FeverMode.pdf"
                     target="_blank" class="document-card">
                     <div class="document-icon">⚙️</div>
                     <h3>시스템 디자인</h3>
                     <p>FB Fever Mode</p>
                     <span class="document-type">System Design</span>
                 </a>
-                <a href="https://file.notion.so/f/f/58b5f648-6212-4518-b010-81db48c64910/312e20a3-aa3a-4e5f-bf72-a4fdd6fec057/MF_Event.pdf?table=block&id=4351538f-9a96-43d1-97e3-b3389c47bd0c&spaceId=58b5f648-6212-4518-b010-81db48c64910&expirationTimestamp=1770811200000&signature=j0neq2wbPlYzfxa7M10UXVS_7I8UdCZ63MNYdYZuM3Q&downloadName=MF_Event.pdf"
+                <a href="MF_Event.pdf"
                     target="_blank" class="document-card">
                     <div class="document-icon">🎮</div>
                     <h3>이벤트 기획</h3>
@@ -1839,6 +2125,93 @@
                         <li>글로벌 서비스</li>
                         <li>파트너십 관리</li>
                     </ul>
+                </div>
+                <div class="skill-category">
+                    <h3>🤖 AI 활용</h3>
+                    <ul>
+                        <li>프롬프트 엔지니어링</li>
+                        <li>AI 협업 기획 문서화</li>
+                        <li>AI 툴 활용 분석</li>
+                        <li>AI 보조 콘텐츠 제작</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- AI Showcase Section -->
+    <section id="ai-showcase" class="ai-showcase">
+        <div class="container">
+            <div class="ai-section-header">
+                <h2 class="section-title" style="margin-bottom:0;">🤖 AI 활용 분석</h2>
+                <span class="ai-section-badge">
+                    <span>✦</span> AI-Powered Work
+                </span>
+            </div>
+            <p class="section-subtitle" style="margin-bottom:2.5rem;">
+                AI 툴을 활용해 분석 기획부터 디자인까지 AI와 함께 제작한 작업물입니다
+            </p>
+
+            <div class="ai-report-card">
+                <!-- 좌: 프리뷰 -->
+                <div class="ai-card-preview">
+                    <div class="ai-preview-title">NCT<br>ZONE</div>
+                    <div class="ai-preview-sub">Post-Launch Analysis</div>
+                    <div class="ai-slide-dots">
+                        <span></span><span></span><span></span><span></span>
+                        <span></span><span></span><span></span><span></span><span></span>
+                    </div>
+                </div>
+
+                <!-- 우: 정보 -->
+                <div class="ai-card-info">
+                    <div>
+                        <div class="ai-badge-row">
+                            <span class="ai-badge ai-made">✦ 99% AI Made</span>
+                            <span class="ai-badge tool">AI Tool</span>
+                            <span class="ai-badge tool">Game Planner's View</span>
+                        </div>
+
+                        <div class="ai-card-title">NCT ZONE 모바일 게임<br>기획자 시점 사후 분석 보고서</div>
+
+                        <p class="ai-card-desc">
+                            NCT ZONE 모바일 게임에 대한 사후 분석 보고서.
+                            유저 후기와 초기 지표를 바탕으로 핵심 루프 설계의 성과와
+                            진행 곡선·BM 구조의 기획 문제점을 분석하고,
+                            기획자 시점의 구체적 대안을 제시한 9슬라이드 웹 PPT.
+                        </p>
+
+                        <div class="ai-workflow">
+                            <span class="ai-workflow-step">📋 분석 기획</span>
+                            <span class="ai-workflow-arrow">→</span>
+                            <span class="ai-workflow-step">🤖 AI 분석</span>
+                            <span class="ai-workflow-arrow">→</span>
+                            <span class="ai-workflow-step">📊 보고서 작성</span>
+                            <span class="ai-workflow-arrow">→</span>
+                            <span class="ai-workflow-step">🎨 PPT 디자인</span>
+                            <span class="ai-workflow-arrow">→</span>
+                            <span class="ai-workflow-step">✅ 완성</span>
+                        </div>
+                    </div>
+
+                    <div class="ai-card-footer">
+                        <div class="ai-stats">
+                            <div class="ai-stat">
+                                <strong>9</strong>
+                                <span>Slides</span>
+                            </div>
+                            <div class="ai-stat">
+                                <strong>99%</strong>
+                                <span>AI Generated</span>
+                            </div>
+                        </div>
+                        <a href="nct_zone_ppt.html" target="_blank" class="ai-view-btn">
+                            View PPT
+                            <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M3 8h10M9 4l4 4-4 4"/>
+                            </svg>
+                        </a>
+                    </div>
                 </div>
             </div>
         </div>

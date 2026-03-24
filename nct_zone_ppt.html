@@ -1,0 +1,1117 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>NCT ZONE — 게임 기획자 시점 사후 분석 보고서</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;1,9..40,300&family=Playfair+Display:ital,wght@0,400;0,700;0,900;1,400;1,700&display=swap" rel="stylesheet">
+<style>
+*, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+:root {
+  --bg: #080810;
+  --card: rgba(13,13,32,0.9);
+  --pink: #E040FB;
+  --cyan: #00E5FF;
+  --gold: #FFD700;
+  --text: #F0F0F0;
+  --muted: #A0A0C0;
+  --green: #00E676;
+  --purple: #9C27B0;
+  --font-serif: 'Playfair Display', serif;
+  --font-impact: 'Bebas Neue', cursive;
+  --font-sans: 'DM Sans', sans-serif;
+}
+
+html, body {
+  width: 100%; height: 100%;
+  overflow: hidden;
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--font-sans);
+  cursor: none;
+}
+
+/* Custom Cursor */
+#cursor-dot {
+  position: fixed; top: 0; left: 0;
+  width: 8px; height: 8px;
+  background: var(--pink);
+  border-radius: 50%;
+  pointer-events: none;
+  z-index: 9999;
+  transform: translate(-50%,-50%);
+  box-shadow: 0 0 8px 3px var(--pink), 0 0 16px 6px rgba(224,64,251,0.4);
+}
+#cursor-ring {
+  position: fixed; top: 0; left: 0;
+  width: 28px; height: 28px;
+  border: 1.5px solid var(--cyan);
+  border-radius: 50%;
+  pointer-events: none;
+  z-index: 9998;
+  transform: translate(-50%,-50%);
+  box-shadow: 0 0 8px 2px rgba(0,229,255,0.3);
+  transition: top 0.12s ease, left 0.12s ease;
+}
+
+/* Background Layer */
+#bg-layer {
+  position: fixed; inset: 0;
+  z-index: 0;
+}
+.bg-mesh {
+  position: absolute; inset: 0;
+  opacity: 0;
+  transition: opacity 0.5s ease;
+}
+.bg-mesh.active { opacity: 1; }
+
+.bg-1 { background: radial-gradient(ellipse at 10% 15%, rgba(120,40,200,0.35) 0%, transparent 55%), radial-gradient(ellipse at 85% 80%, rgba(0,229,255,0.08) 0%, transparent 50%), linear-gradient(145deg, #0a0520 0%, #080810 60%, #080a18 100%); }
+.bg-2 { background: radial-gradient(ellipse at 20% 60%, rgba(0,229,255,0.12) 0%, transparent 50%), radial-gradient(ellipse at 80% 20%, rgba(156,39,176,0.15) 0%, transparent 45%), linear-gradient(155deg, #080818 0%, #080810 70%); }
+.bg-3 { background: radial-gradient(ellipse at 70% 30%, rgba(224,64,251,0.12) 0%, transparent 50%), radial-gradient(ellipse at 20% 80%, rgba(0,229,255,0.1) 0%, transparent 45%), linear-gradient(135deg, #080810 0%, #0a0815 100%); }
+.bg-4 { background: radial-gradient(ellipse at 50% 20%, rgba(0,229,255,0.15) 0%, transparent 55%), radial-gradient(ellipse at 85% 75%, rgba(120,40,200,0.12) 0%, transparent 45%), linear-gradient(160deg, #080818 0%, #080810 100%); }
+.bg-5 { background: radial-gradient(ellipse at 15% 40%, rgba(224,64,251,0.15) 0%, transparent 50%), radial-gradient(ellipse at 80% 60%, rgba(0,229,255,0.1) 0%, transparent 45%), linear-gradient(140deg, #0a0810 0%, #080810 100%); }
+.bg-6 { background: radial-gradient(ellipse at 60% 15%, rgba(255,215,0,0.08) 0%, transparent 50%), radial-gradient(ellipse at 25% 75%, rgba(0,229,255,0.12) 0%, transparent 45%), linear-gradient(150deg, #080810 0%, #0c0a10 100%); }
+.bg-7 { background: radial-gradient(ellipse at 40% 80%, rgba(0,230,118,0.1) 0%, transparent 50%), radial-gradient(ellipse at 75% 25%, rgba(224,64,251,0.1) 0%, transparent 45%), linear-gradient(145deg, #080810 0%, #080a10 100%); }
+.bg-8 { background: radial-gradient(ellipse at 20% 30%, rgba(0,229,255,0.12) 0%, transparent 50%), radial-gradient(ellipse at 80% 70%, rgba(255,215,0,0.08) 0%, transparent 45%), linear-gradient(155deg, #080810 0%, #0a0818 100%); }
+.bg-9 { background: radial-gradient(ellipse at 50% 50%, rgba(120,40,200,0.2) 0%, transparent 60%), radial-gradient(ellipse at 15% 85%, rgba(0,229,255,0.1) 0%, transparent 45%), linear-gradient(145deg, #0a0820 0%, #080810 100%); }
+
+/* Presentation Container */
+#presentation {
+  position: fixed; inset: 0;
+  z-index: 1;
+}
+
+/* Slide */
+.slide {
+  position: absolute; inset: 0;
+  display: flex; flex-direction: column;
+  padding: 48px 60px 88px;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.3s ease;
+  overflow: hidden;
+}
+.slide.active {
+  opacity: 1;
+  pointer-events: all;
+}
+
+/* Stagger animation */
+.slide.active .stagger {
+  animation: fadeUp 0.5s ease forwards;
+  opacity: 0;
+}
+.slide.active .stagger:nth-child(1) { animation-delay: 0.05s; }
+.slide.active .stagger:nth-child(2) { animation-delay: 0.12s; }
+.slide.active .stagger:nth-child(3) { animation-delay: 0.19s; }
+.slide.active .stagger:nth-child(4) { animation-delay: 0.26s; }
+.slide.active .stagger:nth-child(5) { animation-delay: 0.33s; }
+.slide.active .stagger:nth-child(6) { animation-delay: 0.40s; }
+.slide.active .stagger:nth-child(7) { animation-delay: 0.47s; }
+.slide.active .sd1 { animation-delay: 0.10s !important; }
+.slide.active .sd2 { animation-delay: 0.20s !important; }
+.slide.active .sd3 { animation-delay: 0.30s !important; }
+.slide.active .sd4 { animation-delay: 0.40s !important; }
+.slide.active .sd5 { animation-delay: 0.50s !important; }
+.slide.active .sd6 { animation-delay: 0.60s !important; }
+
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(16px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* Slide Header */
+.slide-header {
+  font-family: var(--font-impact);
+  font-size: 13px;
+  letter-spacing: 3px;
+  color: var(--cyan);
+  margin-bottom: 24px;
+  display: flex; align-items: center; gap: 12px;
+}
+.slide-header::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: linear-gradient(90deg, rgba(0,229,255,0.4), transparent);
+}
+
+/* UI Chrome */
+#progress-bar {
+  position: fixed; bottom: 0; left: 0; right: 0;
+  height: 2px;
+  background: rgba(255,255,255,0.06);
+  z-index: 100;
+}
+#progress-fill {
+  height: 100%;
+  background: linear-gradient(90deg, var(--cyan), var(--pink));
+  transition: width 0.4s cubic-bezier(0.4,0,0.2,1);
+  box-shadow: 0 0 8px var(--cyan);
+}
+#slide-number {
+  position: fixed; bottom: 22px; right: 32px;
+  font-family: var(--font-impact);
+  font-size: 13px;
+  letter-spacing: 2px;
+  color: var(--muted);
+  z-index: 100;
+}
+#breadcrumb {
+  position: fixed; bottom: 20px; left: 32px;
+  font-family: var(--font-sans);
+  font-size: 11px;
+  color: var(--muted);
+  letter-spacing: 1px;
+  z-index: 100;
+}
+#nav-dots {
+  position: fixed; bottom: 18px; left: 50%; transform: translateX(-50%);
+  display: flex; gap: 8px; align-items: center;
+  z-index: 100;
+}
+.nav-dot {
+  width: 5px; height: 5px;
+  border-radius: 50%;
+  background: rgba(255,255,255,0.2);
+  cursor: pointer;
+  transition: all 0.3s;
+}
+.nav-dot.active {
+  background: var(--cyan);
+  box-shadow: 0 0 6px var(--cyan);
+  transform: scale(1.4);
+}
+#nav-prev, #nav-next {
+  position: fixed; top: 50%; transform: translateY(-50%);
+  width: 44px; height: 44px;
+  display: flex; align-items: center; justify-content: center;
+  background: rgba(13,13,32,0.6);
+  border: 1px solid rgba(0,229,255,0.2);
+  border-radius: 50%;
+  cursor: pointer;
+  z-index: 100;
+  transition: all 0.2s;
+  color: var(--cyan);
+  font-size: 20px;
+  backdrop-filter: blur(8px);
+}
+#nav-prev { left: 16px; }
+#nav-next { right: 16px; }
+#nav-prev:hover, #nav-next:hover {
+  border-color: var(--cyan);
+  box-shadow: 0 0 12px rgba(0,229,255,0.3);
+  background: rgba(0,229,255,0.08);
+}
+
+/* Common Components */
+.card {
+  background: var(--card);
+  border-radius: 8px;
+  padding: 16px 20px;
+  backdrop-filter: blur(12px);
+}
+.tag {
+  display: inline-block;
+  font-family: var(--font-impact);
+  font-size: 10px;
+  letter-spacing: 2px;
+  padding: 3px 8px;
+  border-radius: 3px;
+  margin-bottom: 6px;
+}
+.label {
+  font-family: var(--font-impact);
+  font-size: 11px;
+  letter-spacing: 2px;
+  color: var(--muted);
+  margin-bottom: 4px;
+}
+.quote-box {
+  padding: 14px 18px;
+  border-radius: 7px;
+  background: rgba(0,229,255,0.05);
+  border-left: 3px solid var(--cyan);
+  font-size: 12.5px;
+  color: var(--muted);
+  line-height: 1.6;
+  font-style: italic;
+}
+.badge {
+  display: inline-block;
+  font-size: 11px;
+  padding: 3px 9px;
+  border-radius: 20px;
+  margin: 2px 3px;
+  font-weight: 500;
+}
+.badge-green { background: rgba(0,230,118,0.15); color: var(--green); border: 1px solid rgba(0,230,118,0.3); }
+.badge-red { background: rgba(224,64,251,0.12); color: var(--pink); border: 1px solid rgba(224,64,251,0.3); }
+
+/* ── SLIDE 1: Cover ── */
+#slide-1 { justify-content: center; }
+.s1-neon-line {
+  position: absolute; left: 32px; top: 10%; bottom: 10%;
+  width: 3px;
+  background: linear-gradient(180deg, var(--cyan), var(--pink));
+  border-radius: 2px;
+  box-shadow: 0 0 12px var(--pink), 0 0 24px rgba(224,64,251,0.3);
+}
+.s1-deco-n {
+  position: absolute; right: -40px; top: 50%; transform: translateY(-50%);
+  font-family: var(--font-serif);
+  font-size: clamp(260px, 28vw, 400px);
+  font-weight: 900;
+  font-style: italic;
+  color: rgba(255,255,255,0.04);
+  line-height: 1;
+  pointer-events: none;
+  user-select: none;
+}
+.s1-ci-logo {
+  position: absolute;
+  right: 80px;
+  top: 50%;
+  transform: translateY(-55%);
+  width: clamp(200px, 22vw, 300px);
+  opacity: 0.92;
+  filter: drop-shadow(0 0 28px rgba(224,64,251,0.5)) drop-shadow(0 0 8px rgba(0,229,255,0.3));
+  pointer-events: none;
+  z-index: 2;
+}
+.s1-content { padding-left: 28px; }
+.s1-eyebrow {
+  font-family: var(--font-impact);
+  font-size: 18px;
+  letter-spacing: 6px;
+  color: var(--cyan);
+  margin-bottom: 8px;
+}
+.s1-title {
+  font-family: var(--font-serif);
+  font-size: clamp(68px, 8.5vw, 112px);
+  font-weight: 900;
+  color: #fff;
+  line-height: 0.9;
+  margin-bottom: 20px;
+}
+.s1-subtitle {
+  font-size: 15px;
+  color: var(--muted);
+  font-weight: 300;
+  letter-spacing: 1px;
+  margin-bottom: 40px;
+}
+.s1-meta { display: flex; gap: 28px; flex-wrap: wrap; }
+.s1-meta-label {
+  font-family: var(--font-impact);
+  font-size: 10px;
+  letter-spacing: 2px;
+  color: var(--muted);
+  margin-bottom: 2px;
+}
+.s1-meta-value { font-size: 13px; color: var(--text); font-weight: 500; }
+
+/* ── SLIDE 2: Overview ── */
+#slide-2 .s2-body {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 22px;
+  flex: 1; min-height: 0;
+}
+.info-table { width: 100%; border-collapse: collapse; }
+.info-table tr { border-bottom: 1px solid rgba(255,255,255,0.06); }
+.info-table td { padding: 9px 4px; font-size: 12.5px; }
+.info-table td:first-child { color: var(--muted); font-size: 11px; letter-spacing: 1px; width: 80px; }
+.info-table td:last-child { color: var(--text); font-weight: 500; }
+.s2-right { display: flex; flex-direction: column; gap: 10px; }
+.axis-card {
+  padding: 14px 16px; border-radius: 7px;
+  background: var(--card);
+  flex: 1;
+}
+.axis-card.c1 { border-left: 2px solid var(--cyan); }
+.axis-card.c2 { border-left: 2px solid #9C27B0; }
+.axis-card.c3 { border-left: 2px solid var(--pink); }
+.axis-card .axis-name { font-family: var(--font-impact); font-size: 14px; letter-spacing: 1.5px; margin-bottom: 5px; }
+.axis-card.c1 .axis-name { color: var(--cyan); }
+.axis-card.c2 .axis-name { color: #CE93D8; }
+.axis-card.c3 .axis-name { color: var(--pink); }
+.axis-card .axis-desc { font-size: 12px; color: var(--muted); line-height: 1.5; }
+
+/* ── SLIDE 3: User Rating ── */
+#slide-3 .s3-body {
+  display: grid;
+  grid-template-columns: 170px 1fr 1fr;
+  gap: 18px;
+  flex: 1; min-height: 0;
+}
+.score-box { display: flex; flex-direction: column; gap: 10px; }
+.score-main {
+  background: var(--card); border-radius: 8px;
+  padding: 18px 14px; text-align: center;
+  border-top: 2px solid var(--gold); flex: 1;
+}
+.score-main .score-val {
+  font-family: var(--font-impact);
+  font-size: 60px; color: var(--gold);
+  line-height: 1; display: block;
+}
+.score-main .score-src { font-size: 11px; color: var(--muted); letter-spacing: 1px; margin-top: 4px; }
+.retention-box {
+  background: var(--card); border-radius: 8px;
+  padding: 14px; text-align: center;
+  border-top: 2px solid var(--green);
+}
+.retention-box .ret-val { font-family: var(--font-impact); font-size: 36px; color: var(--green); display: block; }
+.retention-box .ret-label { font-size: 11px; color: var(--muted); }
+.eval-col { display: flex; flex-direction: column; gap: 7px; overflow: hidden; }
+.eval-col .col-title {
+  font-family: var(--font-impact);
+  font-size: 11px; letter-spacing: 2px;
+  padding-bottom: 6px;
+  border-bottom: 1px solid rgba(255,255,255,0.08);
+  margin-bottom: 1px;
+}
+.eval-card { padding: 9px 12px; border-radius: 6px; background: var(--card); flex: 1; }
+.eval-card.good { border-left: 2px solid var(--green); }
+.eval-card.bad { border-left: 2px solid var(--pink); }
+.eval-card .ec-title { font-size: 12px; font-weight: 600; margin-bottom: 2px; }
+.eval-card.good .ec-title { color: var(--green); }
+.eval-card.bad .ec-title { color: var(--pink); }
+.eval-card .ec-desc { font-size: 11px; color: var(--muted); line-height: 1.4; }
+
+/* ── SLIDE 4: Core Loop ── */
+#slide-4 .s4-body { flex: 1; min-height: 0; display: flex; flex-direction: column; gap: 18px; }
+.flow-diagram {
+  background: var(--card);
+  border-radius: 10px;
+  padding: 22px 28px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 6px;
+}
+.flow-node { display: flex; flex-direction: column; align-items: center; text-align: center; gap: 6px; flex: 1; }
+.flow-node-box {
+  width: 100%; max-width: 120px;
+  padding: 11px 6px;
+  border-radius: 8px;
+  background: rgba(0,229,255,0.06);
+  border: 1px solid rgba(0,229,255,0.2);
+  font-size: 11.5px;
+  font-weight: 600;
+  color: var(--text);
+  line-height: 1.4;
+}
+.flow-node-sub { font-size: 10px; color: var(--muted); }
+.flow-arrow { color: var(--cyan); font-size: 20px; flex-shrink: 0; opacity: 0.5; }
+.s4-cards { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px; }
+.s4-card { padding: 15px 17px; border-radius: 8px; background: var(--card); }
+.s4-card.c1 { border-top: 2px solid var(--cyan); }
+.s4-card.c2 { border-top: 2px solid #9C27B0; }
+.s4-card.c3 { border-top: 2px solid var(--pink); }
+.s4-card .s4c-tag { font-family: var(--font-impact); font-size: 10px; letter-spacing: 2px; margin-bottom: 7px; }
+.s4-card.c1 .s4c-tag { color: var(--cyan); }
+.s4-card.c2 .s4c-tag { color: #CE93D8; }
+.s4-card.c3 .s4c-tag { color: var(--pink); }
+.s4-card .s4c-title { font-size: 13px; font-weight: 600; margin-bottom: 5px; color: var(--text); }
+.s4-card .s4c-desc { font-size: 11.5px; color: var(--muted); line-height: 1.5; }
+
+/* ── SLIDE 5: Problems ── */
+#slide-5 .s5-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  grid-template-rows: 1fr 1fr;
+  gap: 14px;
+  flex: 1; min-height: 0;
+}
+.prob-card {
+  background: var(--card); border-radius: 8px;
+  padding: 15px 17px;
+  display: flex; flex-direction: column; gap: 7px;
+}
+.prob-card .prob-icon { font-size: 20px; }
+.prob-card .prob-title { font-size: 13px; font-weight: 700; color: var(--text); }
+.prob-card .prob-desc { font-size: 11.5px; color: var(--muted); line-height: 1.5; flex: 1; }
+.prob-alt {
+  padding: 7px 11px;
+  border-radius: 5px;
+  background: rgba(0,229,255,0.06);
+  border-left: 2px solid var(--cyan);
+  font-size: 11px;
+  color: var(--cyan);
+}
+.prob-alt::before { content: '💡 대안: '; font-weight: 600; }
+
+/* ── SLIDE 6: BM ── */
+#slide-6 .s6-body {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 22px;
+  flex: 1; min-height: 0;
+}
+.bm-dual { display: flex; align-items: center; gap: 10px; margin-bottom: 14px; }
+.bm-box {
+  flex: 1; background: var(--card); border-radius: 8px;
+  padding: 14px 12px; text-align: center; font-size: 12px; font-weight: 600;
+}
+.bm-box .bm-box-title { font-family: var(--font-impact); font-size: 14px; letter-spacing: 1px; margin-bottom: 4px; }
+.bm-plus { font-family: var(--font-impact); font-size: 28px; color: var(--muted); }
+.s6-right { display: flex; flex-direction: column; gap: 11px; overflow: hidden; }
+.s6-card { padding: 14px 16px; border-radius: 8px; background: var(--card); }
+
+/* ── SLIDE 7: KPI ── */
+#slide-7 .s7-body { flex: 1; min-height: 0; display: flex; flex-direction: column; gap: 18px; }
+.kpi-row { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; }
+.kpi-card { background: var(--card); border-radius: 10px; padding: 20px 16px; text-align: center; }
+.kpi-card .kpi-val { font-family: var(--font-impact); font-size: 50px; line-height: 1; display: block; margin-bottom: 5px; }
+.kpi-card .kpi-unit { font-family: var(--font-impact); font-size: 22px; }
+.kpi-card .kpi-label { font-size: 11.5px; color: var(--muted); line-height: 1.4; }
+.kpi-card.c-green { border-top: 2px solid var(--green); }
+.kpi-card.c-cyan { border-top: 2px solid var(--cyan); }
+.kpi-card.c-gold { border-top: 2px solid var(--gold); }
+.kpi-card.c-purple { border-top: 2px solid #9C27B0; }
+.kpi-card.c-green .kpi-val { color: var(--green); }
+.kpi-card.c-cyan .kpi-val { color: var(--cyan); }
+.kpi-card.c-gold .kpi-val { color: var(--gold); }
+.kpi-card.c-purple .kpi-val { color: #CE93D8; }
+.s7-eval { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; flex: 1; min-height: 0; }
+.eval-block { background: var(--card); border-radius: 8px; padding: 14px 17px; overflow: hidden; }
+.eval-block.pos { border-top: 2px solid var(--green); }
+.eval-block.neg { border-top: 2px solid var(--pink); }
+.eval-block .eb-title { font-family: var(--font-impact); font-size: 11px; letter-spacing: 2px; margin-bottom: 9px; }
+.eval-block.pos .eb-title { color: var(--green); }
+.eval-block.neg .eb-title { color: var(--pink); }
+.eval-block ul { list-style: none; }
+.eval-block ul li {
+  font-size: 12px; color: var(--muted);
+  padding: 5px 0;
+  border-bottom: 1px solid rgba(255,255,255,0.05);
+  line-height: 1.45;
+}
+.eval-block ul li:last-child { border-bottom: none; }
+.eval-block.pos ul li::before { content: '✓ '; color: var(--green); }
+.eval-block.neg ul li::before { content: '✕ '; color: var(--pink); }
+
+/* ── SLIDE 8: Table ── */
+#slide-8 .s8-body { flex: 1; min-height: 0; overflow: hidden; }
+.analysis-table { width: 100%; border-collapse: collapse; font-size: 12.5px; }
+.analysis-table th {
+  background: rgba(0,229,255,0.08);
+  color: var(--cyan);
+  font-family: var(--font-impact);
+  font-size: 12px; letter-spacing: 2px;
+  padding: 11px 15px; text-align: left;
+  border-bottom: 1px solid rgba(0,229,255,0.2);
+}
+.analysis-table td {
+  padding: 12px 15px;
+  vertical-align: top;
+  border-bottom: 1px solid rgba(255,255,255,0.05);
+  line-height: 1.55;
+}
+.analysis-table tr:hover td { background: rgba(255,255,255,0.02); }
+.analysis-table td:first-child {
+  font-family: var(--font-impact);
+  font-size: 13px; letter-spacing: 1px;
+  color: var(--text); white-space: nowrap; width: 130px;
+}
+.analysis-table td:nth-child(2) { color: var(--pink); width: 36%; }
+.analysis-table td:nth-child(3) { color: var(--cyan); }
+
+/* ── SLIDE 9: Conclusion ── */
+#slide-9 .s9-body { flex: 1; min-height: 0; display: flex; flex-direction: column; gap: 18px; }
+.conclusion-quote {
+  background: rgba(0,229,255,0.04);
+  border-radius: 10px;
+  border-top: 3px solid var(--cyan);
+  padding: 26px 30px;
+  flex: 1;
+}
+.conclusion-quote p {
+  font-size: 14px; color: var(--text);
+  line-height: 1.85; margin-bottom: 14px;
+}
+.conclusion-quote p:last-child { margin-bottom: 0; }
+.conclusion-quote p strong { color: var(--cyan); font-weight: 600; }
+.conclusion-quote p em { color: var(--gold); font-style: normal; }
+.s9-reflection {
+  border-left: 3px solid var(--pink);
+  background: rgba(224,96,138,0.05);
+  border-radius: 0 8px 8px 0;
+  padding: 14px 20px;
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+}
+.s9-reflection-icon {
+  font-size: 18px;
+  flex-shrink: 0;
+  margin-top: 1px;
+}
+.s9-reflection-label {
+  font-family: var(--font-impact);
+  font-size: 10px;
+  letter-spacing: 2px;
+  color: var(--pink);
+  margin-bottom: 5px;
+}
+.s9-reflection-text {
+  font-size: 13px;
+  color: var(--muted);
+  line-height: 1.7;
+}
+.s9-reflection-text em {
+  color: var(--text);
+  font-style: normal;
+  font-weight: 500;
+}
+.s9-kpi { display: flex; gap: 12px; }
+.s9-kpi-item {
+  flex: 1; background: var(--card); border-radius: 8px;
+  padding: 15px 17px; display: flex; align-items: center; gap: 11px;
+}
+.s9-kpi-icon { font-size: 22px; flex-shrink: 0; }
+.s9-kpi-text .kpi-t { font-size: 13px; font-weight: 600; color: var(--text); margin-bottom: 2px; }
+.s9-kpi-text .kpi-s { font-size: 11px; color: var(--muted); }
+
+</style>
+</head>
+<body>
+
+<div id="cursor-dot"></div>
+<div id="cursor-ring"></div>
+
+<!-- Backgrounds -->
+<div id="bg-layer">
+  <div class="bg-mesh bg-1 active"></div>
+  <div class="bg-mesh bg-2"></div>
+  <div class="bg-mesh bg-3"></div>
+  <div class="bg-mesh bg-4"></div>
+  <div class="bg-mesh bg-5"></div>
+  <div class="bg-mesh bg-6"></div>
+  <div class="bg-mesh bg-7"></div>
+  <div class="bg-mesh bg-8"></div>
+  <div class="bg-mesh bg-9"></div>
+</div>
+
+<div id="presentation">
+
+  <!-- SLIDE 1: Cover -->
+  <div class="slide active" id="slide-1">
+    <div class="s1-neon-line stagger"></div>
+    <div class="s1-deco-n">N</div>
+    <img
+      src="https://nctzofficial.com/img/deco-img-01.png"
+      alt="NCT ZONE CI"
+      class="s1-ci-logo stagger"
+    >
+    <div class="s1-content">
+      <div class="s1-eyebrow stagger">GAME PLANNER'S</div>
+      <div class="s1-title stagger">NCT ZONE</div>
+      <div class="s1-subtitle stagger">게임 기획자 시점 사후 분석 보고서</div>
+      <div class="s1-meta stagger">
+        <div class="s1-meta-item">
+          <div class="s1-meta-label">개발 / 서비스</div>
+          <div class="s1-meta-value">SM Entertainment × Netmarble</div>
+        </div>
+        <div class="s1-meta-item">
+          <div class="s1-meta-label">IP</div>
+          <div class="s1-meta-value">NCT (25인 유닛 통합)</div>
+        </div>
+        <div class="s1-meta-item">
+          <div class="s1-meta-label">출시</div>
+          <div class="s1-meta-value">2023 글로벌</div>
+        </div>
+        <div class="s1-meta-item">
+          <div class="s1-meta-label">분석 관점</div>
+          <div class="s1-meta-value">팬덤 특화 수집형 모바일 게임 기획</div>
+        </div>
+        <div class="s1-meta-item">
+          <div class="s1-meta-label">작성일</div>
+          <div class="s1-meta-value">2026. 03. 23</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- SLIDE 2: Overview -->
+  <div class="slide" id="slide-2">
+    <div class="slide-header stagger">01 / 게임 개요</div>
+    <div class="s2-body">
+      <div class="stagger">
+        <div class="label" style="margin-bottom:12px;">기본 정보</div>
+        <div class="card" style="padding:0; overflow:hidden; margin-bottom:14px;">
+          <table class="info-table">
+            <tr><td>장르</td><td>팬덤 특화 수집형 RPG / 리듬</td></tr>
+            <tr><td>플랫폼</td><td>iOS · Android (글로벌)</td></tr>
+            <tr><td>출시</td><td>2023 (NCT ZONE 브랜드명)</td></tr>
+            <tr><td>IP 규모</td><td>NCT 전 유닛 25인 통합</td></tr>
+            <tr><td>타깃</td><td>10~30대 K-pop 팬덤 (NCTzen)</td></tr>
+            <tr><td>개발사</td><td>SM Ent. × Netmarble</td></tr>
+            <tr><td>BM</td><td>가챠 소환 + 에너지 과금 혼합형</td></tr>
+          </table>
+        </div>
+        <div class="quote-box">"팬덤의 수집 욕구와 K-pop IP를 결합한 하이브리드 팬게임 — 3축 콘텐츠 설계가 핵심 기획 실험"</div>
+      </div>
+      <div class="stagger">
+        <div class="label" style="margin-bottom:12px;">핵심 콘텐츠 3축 구조</div>
+        <div class="s2-right">
+          <div class="axis-card c1">
+            <div class="axis-name">⚔ KWANGYA — 코어 루프</div>
+            <div class="axis-desc">스테이지 기반 전투 → 젬·카드 획득 → 가챠 소환. 게임의 핵심 수익 동선이자 반복 플레이 엔진.</div>
+          </div>
+          <div class="axis-card c2">
+            <div class="axis-name">🌐 NEOZONE — 메타 루프</div>
+            <div class="axis-desc">세계관 탐험 + 멤버 스토리 수집. Lv.5 이후 개방. 팬덤 서사 소비 공간으로 설계.</div>
+          </div>
+          <div class="axis-card c3">
+            <div class="axis-name">🏠 LOBBY — 팬 서비스 루프</div>
+            <div class="axis-desc">멤버 인터랙션 + 포토카드 수집 + AR 연출. 감성 리텐션의 핵심 축. 덱 배치 및 커스텀.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- SLIDE 3: User Rating -->
+  <div class="slide" id="slide-3">
+    <div class="slide-header stagger">02 / 유저 평가 총평</div>
+    <div class="s3-body">
+      <div class="score-box stagger">
+        <div class="score-main">
+          <span class="score-val">7.6</span>
+          <div class="score-src">TapTap 평점</div>
+          <div style="margin-top:8px; font-size:11px; color:var(--muted);">글로벌 팬덤 게임 평균 대비 상위권</div>
+        </div>
+        <div class="retention-box">
+          <span class="ret-val">70%</span>
+          <div class="ret-label">D+30 리텐션</div>
+          <div style="font-size:10px; color:var(--muted); margin-top:4px;">IP 파워 + 수집 루프 복합 효과</div>
+        </div>
+      </div>
+      <div class="eval-col stagger">
+        <div class="col-title" style="color:var(--green);">✓ 기획이 잘 작동한 영역</div>
+        <div class="eval-card good">
+          <div class="ec-title">팬덤 수집 루프</div>
+          <div class="ec-desc">멤버 카드 수집 욕구와 가챠가 정합하며 강력한 코어 루프 성립</div>
+        </div>
+        <div class="eval-card good">
+          <div class="ec-title">3축 콘텐츠 구조</div>
+          <div class="ec-desc">KWANGYA·NEOZONE·LOBBY 역할 분리로 다양한 플레이어 유형 수용</div>
+        </div>
+        <div class="eval-card good">
+          <div class="ec-title">초반 온보딩 보상</div>
+          <div class="ec-desc">초기 무료 소환 + 선택형 SSR로 진입 장벽 낮춤. 초반 리텐션 확보</div>
+        </div>
+        <div class="eval-card good">
+          <div class="ec-title">감성 인터랙션</div>
+          <div class="ec-desc">멤버 음성·AR 연출·포토카드 수집이 팬덤 감성 수요와 직결</div>
+        </div>
+      </div>
+      <div class="eval-col stagger">
+        <div class="col-title" style="color:var(--pink);">✕ 기획 설계가 아쉬운 영역</div>
+        <div class="eval-card bad">
+          <div class="ec-title">후반 진행 곡선</div>
+          <div class="ec-desc">초반 관대한 에너지 설계 후 급격한 비용 상승 → 기대 배반 이탈</div>
+        </div>
+        <div class="eval-card bad">
+          <div class="ec-title">콘텐츠 개방 구조</div>
+          <div class="ec-desc">NEOZONE Lv.5 이후 개방 — 초반 팬 서비스 공백으로 이탈 유발</div>
+        </div>
+        <div class="eval-card bad">
+          <div class="ec-title">BM 구조 일관성</div>
+          <div class="ec-desc">가챠 + 에너지 이중 과금 구조, 천장 부재로 수집 완성 불확실성</div>
+        </div>
+        <div class="eval-card bad">
+          <div class="ec-title">에너지 소진 후 훅</div>
+          <div class="ec-desc">소진 시점 재방문 동기 설계 부재 — 이탈 임계점에서 무방비</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- SLIDE 4: Core Loop -->
+  <div class="slide" id="slide-4">
+    <div class="slide-header stagger">03 / 핵심 루프 설계</div>
+    <div class="s4-body">
+      <div class="stagger">
+        <div class="label" style="margin-bottom:11px;">수집 코어 루프 플로우</div>
+        <div class="flow-diagram">
+          <div class="flow-node">
+            <div class="flow-node-box">⚔<br>스테이지<br>플레이</div>
+            <div class="flow-node-sub">에너지 소비</div>
+          </div>
+          <div class="flow-arrow">→</div>
+          <div class="flow-node">
+            <div class="flow-node-box" style="border-color:rgba(255,215,0,0.3); background:rgba(255,215,0,0.05);">💎<br>젬·카드<br>획득</div>
+            <div class="flow-node-sub">보상 지급</div>
+          </div>
+          <div class="flow-arrow">→</div>
+          <div class="flow-node">
+            <div class="flow-node-box" style="border-color:rgba(224,64,251,0.3); background:rgba(224,64,251,0.05);">🎰<br>가챠 소환<br><span style="font-size:10px;color:var(--muted);">SSR/SR/R/N</span></div>
+            <div class="flow-node-sub">핵심 수익 포인트</div>
+          </div>
+          <div class="flow-arrow">→</div>
+          <div class="flow-node">
+            <div class="flow-node-box" style="border-color:rgba(156,39,176,0.4); background:rgba(156,39,176,0.06);">📖<br>멤버 스토리<br>해금</div>
+            <div class="flow-node-sub">팬덤 보상</div>
+          </div>
+          <div class="flow-arrow">→</div>
+          <div class="flow-node">
+            <div class="flow-node-box" style="border-color:rgba(0,229,255,0.3); background:rgba(0,229,255,0.05);">🎯<br>다음 카드<br>목표</div>
+            <div class="flow-node-sub">지속 동기</div>
+          </div>
+        </div>
+      </div>
+      <div class="s4-cards stagger">
+        <div class="s4-card c1">
+          <div class="s4c-tag">FANDOM MOTIVATION</div>
+          <div class="s4c-title">팬덤 동기와 루프의 정합성</div>
+          <div class="s4c-desc">멤버별 SSR 카드 수집 욕구가 가챠 소환의 핵심 동기로 기능. IP 팬덤의 고유 수집 심리를 루프에 정확히 내재화한 설계.</div>
+        </div>
+        <div class="s4-card c2">
+          <div class="s4c-tag">TRIAXIS DESIGN</div>
+          <div class="s4c-title">3축 루프의 역할 분리</div>
+          <div class="s4c-desc">코어(전투) → 메타(서사) → 팬서비스(인터랙션) 3단 구조가 다양한 플레이어 프로파일을 수용. 하드코어·미드코어·라이트 유저 모두 진입점 존재.</div>
+        </div>
+        <div class="s4-card c3">
+          <div class="s4c-tag">EMOTIONAL DESIGN</div>
+          <div class="s4c-title">감성 인터랙션의 설계 효과</div>
+          <div class="s4c-desc">멤버 생일 연출·음성 인식·AR 포토카드는 단순 게임 기능을 넘어 팬덤 경험 전달. 리텐션을 게임성이 아닌 감정 유대로 지지.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- SLIDE 5: Problems -->
+  <div class="slide" id="slide-5">
+    <div class="slide-header stagger">04 / 기획 설계 문제점</div>
+    <div class="s5-grid">
+      <div class="prob-card stagger" style="border-top:2px solid var(--pink);">
+        <div class="prob-icon">📉</div>
+        <div class="prob-title">진행 곡선 설계 실패</div>
+        <div class="prob-desc">초반 에너지 비용 낮고 보상 관대 → 레벨업 후 급격한 에너지 소모량 증가. 유저가 학습한 기대값을 후반에 배반하는 구조. 과금 압박이 진행과 연동되어 이탈 급증.</div>
+        <div class="prob-alt">에너지 곡선 로그 스케일 재설계, 과금 압박은 이벤트 구조로 분리</div>
+      </div>
+      <div class="prob-card stagger" style="border-top:2px solid #9C27B0;">
+        <div class="prob-icon">🔒</div>
+        <div class="prob-title">NEOZONE 개방 구조 문제</div>
+        <div class="prob-desc">핵심 팬 서비스 콘텐츠(NEOZONE)가 Lv.5 이후 개방. 초반 유입된 팬 유저가 원하는 세계관 탐험·멤버 서사를 즉시 경험하지 못함. 초반 이탈 가속 요인.</div>
+        <div class="prob-alt">튜토리얼 직후 미리보기·티저 방식 노출로 팬 서비스 조기 경험 제공</div>
+      </div>
+      <div class="prob-card stagger" style="border-top:2px solid var(--gold);">
+        <div class="prob-icon">⚡</div>
+        <div class="prob-title">에너지 소진 후 재방문 훅 부재</div>
+        <div class="prob-desc">에너지 소진 이후 게임을 닫은 유저에게 재방문 동기를 제공하는 설계가 미흡. 이탈 임계점에서 무방비. 충성 유저도 습관 단절 위험에 노출.</div>
+        <div class="prob-alt">일일 미션·스트릭 보상·멤버 스케줄 알림 등 재방문 훅 다층 설계</div>
+      </div>
+      <div class="prob-card stagger" style="border-top:2px solid var(--cyan);">
+        <div class="prob-icon">🎯</div>
+        <div class="prob-title">수집 완성 불확실성 (천장 부재)</div>
+        <div class="prob-desc">SSR 확률 불투명 + 천장 시스템 부재. 팬덤 게임 핵심 동기인 "수집 완성 가능성"이 보장되지 않아 과금 회의감 증폭. 국내외 팬덤 커뮤니티 주요 불만 지점.</div>
+        <div class="prob-alt">천장 + 픽업 배너 + 확률 공시 도입으로 수집 완성 신뢰 확보</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- SLIDE 6: BM -->
+  <div class="slide" id="slide-6">
+    <div class="slide-header stagger">05 / BM 설계 분석</div>
+    <div class="s6-body">
+      <div class="stagger">
+        <div class="label" style="margin-bottom:13px;">이중 과금 구조 시각화</div>
+        <div class="bm-dual">
+          <div class="bm-box" style="border-top:2px solid var(--pink);">
+            <div class="bm-box-title" style="color:var(--pink);">가챠 소환</div>
+            <div style="font-size:11px; color:var(--muted);">젬 · 소환권<br>SSR/SR/R/N</div>
+          </div>
+          <div class="bm-plus">+</div>
+          <div class="bm-box" style="border-top:2px solid var(--gold);">
+            <div class="bm-box-title" style="color:var(--gold);">에너지 충전</div>
+            <div style="font-size:11px; color:var(--muted);">스테이지 진행<br>레벨업 병목</div>
+          </div>
+        </div>
+        <div style="font-size:12px; color:var(--muted); line-height:1.65; margin-bottom:14px;">팬덤 게임에서 수집(가챠)과 진행(에너지) 두 축을 모두 유료화하면 유저는 "무엇을 위해 과금하는가"라는 혼란을 겪음. 과금 피로도 누적이 BM의 핵심 리스크.</div>
+        <div class="label" style="margin-bottom:8px;">유저 반응</div>
+        <div>
+          <span class="badge badge-green">✓ 초반 보상 관대</span>
+          <span class="badge badge-green">✓ 카드 디자인 퀄리티</span>
+          <span class="badge badge-green">✓ 선택형 SSR 온보딩</span>
+          <span class="badge badge-red">✕ 천장 없음</span>
+          <span class="badge badge-red">✕ 에너지 후반 급증</span>
+          <span class="badge badge-red">✕ 이중 과금 피로</span>
+          <span class="badge badge-red">✕ 확률 불투명</span>
+        </div>
+      </div>
+      <div class="s6-right stagger">
+        <div class="s6-card" style="border-top:2px solid var(--gold);">
+          <div class="label" style="color:var(--gold); margin-bottom:9px;">BM 핵심 지표</div>
+          <div style="font-size:12.5px; color:var(--muted); line-height:1.65;">D+30 리텐션 <strong style="color:var(--gold);">70%</strong>는 IP 흡인력이 BM 약점을 버텨낸 수치. 설계 공백이 보완된다면 장기 과금 전환율 추가 개선 여지 존재.</div>
+        </div>
+        <div class="s6-card" style="border-top:2px solid var(--cyan);">
+          <div class="label" style="color:var(--cyan); margin-bottom:9px;">기획 관점 BM 대안</div>
+          <ul style="list-style:none; font-size:12px; color:var(--muted); line-height:1.6;">
+            <li style="padding:4px 0; border-bottom:1px solid rgba(255,255,255,0.05);">① 과금 축 단일화 — 가챠 OR 에너지, 하나에 집중</li>
+            <li style="padding:4px 0; border-bottom:1px solid rgba(255,255,255,0.05);">② 통합 패스 도입 — 월 구독형으로 양쪽 보충</li>
+            <li style="padding:4px 0; border-bottom:1px solid rgba(255,255,255,0.05);">③ 픽업 배너 + 천장 — 수집 완성 가능성 보장</li>
+            <li style="padding:4px 0;">④ 이벤트 정기화 — 과금 압박을 이벤트로 분산</li>
+          </ul>
+        </div>
+        <div class="quote-box" style="flex:1;">"팬덤 게임의 BM은 수집 완성을 '가능하게 보이게' 설계해야 한다. 불가능해 보이는 순간 팬덤도 지갑을 닫는다."</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- SLIDE 7: KPI -->
+  <div class="slide" id="slide-7">
+    <div class="slide-header stagger">06 / 핵심 성과 지표</div>
+    <div class="s7-body">
+      <div class="kpi-row stagger">
+        <div class="kpi-card c-green">
+          <span class="kpi-val">70<span class="kpi-unit">%</span></span>
+          <div class="kpi-label">D+30 리텐션<br>팬덤 게임 상위권</div>
+        </div>
+        <div class="kpi-card c-cyan">
+          <span class="kpi-val">400<span class="kpi-unit">+</span></span>
+          <div class="kpi-label">실사 카드 종류<br>수집 볼륨 압도적</div>
+        </div>
+        <div class="kpi-card c-gold">
+          <span class="kpi-val">7.6</span>
+          <div class="kpi-label">TapTap 평점<br>글로벌 유저 평가</div>
+        </div>
+        <div class="kpi-card c-purple">
+          <span class="kpi-val">25<span class="kpi-unit">인</span></span>
+          <div class="kpi-label">NCT 전 유닛 통합<br>IP 완성도</div>
+        </div>
+      </div>
+      <div class="s7-eval stagger">
+        <div class="eval-block pos">
+          <div class="eb-title">✓ 성과로 읽는 기획 평가</div>
+          <ul>
+            <li>팬덤 수집 루프 정합성 — 70% D+30 리텐션으로 입증</li>
+            <li>25인 IP 완전 수록으로 팬덤 소외감 최소화</li>
+            <li>400+ 카드 볼륨이 수집 욕구 충족의 물리적 기반 제공</li>
+            <li>초반 온보딩 보상 설계로 초기 이탈률 낮춤</li>
+            <li>3축 콘텐츠 구조로 다양한 플레이어 유형 동시 수용</li>
+          </ul>
+        </div>
+        <div class="eval-block neg">
+          <div class="eb-title">✕ 한계로 읽는 기획 평가</div>
+          <ul>
+            <li>후반 에너지 급증 — 진행 곡선 설계 실패로 중반 이탈 유발</li>
+            <li>천장 부재 — 수집 완성 가능성 미보장, 장기 과금 의지 저하</li>
+            <li>이중 과금 피로 — 가챠·에너지 양축 압박으로 BM 혼란</li>
+            <li>NEOZONE 지연 개방 — 초반 팬 서비스 경험 공백</li>
+            <li>에너지 소진 후 재방문 훅 부재로 이탈 임계점 무방비</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- SLIDE 8: Table -->
+  <div class="slide" id="slide-8">
+    <div class="slide-header stagger">07 / 기획 문제점 &amp; 대안 방법</div>
+    <div class="s8-body stagger">
+      <table class="analysis-table">
+        <thead>
+          <tr>
+            <th>기획 영역</th>
+            <th>🔍 문제점</th>
+            <th>💡 대안 방법</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>진행 곡선</td>
+            <td>초반 관대 → 후반 에너지 비용 급증. 유저가 학습한 기대값 배반, 중반 이탈 급증</td>
+            <td>에너지 곡선 로그 스케일 재설계. 과금 압박은 메인 진행에서 분리해 이벤트 구조로 흡수</td>
+          </tr>
+          <tr>
+            <td>콘텐츠 개방</td>
+            <td>NEOZONE Lv.5 이후 개방. 팬 유저가 원하는 세계관·서사 초반 경험 불가</td>
+            <td>튜토리얼 직후 NEOZONE 미리보기·티저 노출. 잠금 상태에서도 팬 서비스 맛보기 제공</td>
+          </tr>
+          <tr>
+            <td>재방문 훅</td>
+            <td>에너지 소진 후 재방문 이유 설계 없음. 이탈 임계점에서 유저를 붙잡을 메커니즘 부재</td>
+            <td>일일 미션 + 스트릭 보상 + 멤버 스케줄 알림으로 재방문 훅 다층화</td>
+          </tr>
+          <tr>
+            <td>수집 완성</td>
+            <td>천장 시스템 부재 + SSR 확률 불투명. 수집 완성 가능성 미보장으로 팬덤 이탈</td>
+            <td>천장 + 픽업 배너 + 확률 공시 3종 세트 도입. 수집 완성 신뢰 확보</td>
+          </tr>
+          <tr>
+            <td>BM 구조</td>
+            <td>가챠(수집)·에너지(진행) 이중 과금으로 유저 과금 판단 혼란 및 피로 누적</td>
+            <td>과금 축 단일화 또는 통합 월정액 패스 도입. 이벤트 정기화로 과금 압박 분산</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- SLIDE 9: Conclusion -->
+  <div class="slide" id="slide-9">
+    <div class="slide-header stagger">08 / 종합 결론</div>
+    <div class="s9-body">
+      <div class="conclusion-quote stagger">
+        <p>
+          <strong>NCT ZONE은 팬덤 특화 수집 루프 설계에서는 성공했으나, 진행 설계와 BM 구조에서 일관성을 잃었다.</strong> 3축 콘텐츠 구조와 멤버 수집 루프의 정합성은 팬덤 게임 기획의 모범 사례로 평가할 수 있다.
+        </p>
+        <p>
+          초반 관대 → 후반 급격한 에너지 비용 상승은 <em>유저 기대를 배반하는 진행 곡선 설계 실패</em>이며, 천장 부재와 이중 과금은 팬덤 게임 핵심 동기인 수집 완성 가능성을 흔드는 BM 기획 공백이다. 두 문제 모두 설계 단계에서 예방 가능했던 구조적 오류에 해당한다.
+        </p>
+        <p>
+          <strong>D+30 리텐션 70%는 IP 파워가 설계 공백을 버텨낸 수치다.</strong> 설계 일관성이 보완된다면 장기 리텐션 유지와 평점 회복 모두 기대 가능하다. 팬덤 게임은 IP의 힘을 설계가 받쳐줄 때 비로소 장기 서비스로 완성된다.
+        </p>
+      </div>
+      <div class="s9-kpi stagger">
+        <div class="s9-kpi-item" style="border-top:2px solid var(--green);">
+          <div class="s9-kpi-icon">✅</div>
+          <div class="s9-kpi-text">
+            <div class="kpi-t">루프 설계</div>
+            <div class="kpi-s">팬덤 수집 루프·3축 구조·감성 인터랙션</div>
+          </div>
+        </div>
+        <div class="s9-kpi-item" style="border-top:2px solid var(--gold);">
+          <div class="s9-kpi-icon">⚠️</div>
+          <div class="s9-kpi-text">
+            <div class="kpi-t">진행 곡선·BM</div>
+            <div class="kpi-s">에너지 급증·천장 부재·이중 과금 피로</div>
+          </div>
+        </div>
+        <div class="s9-kpi-item" style="border-top:2px solid var(--cyan);">
+          <div class="s9-kpi-icon">📊</div>
+          <div class="s9-kpi-text">
+            <div class="kpi-t">70% D+30 리텐션</div>
+            <div class="kpi-s">IP 파워가 설계 공백을 버텨낸 핵심 지표</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="s9-reflection stagger">
+        <div class="s9-reflection-icon">✍️</div>
+        <div>
+          <div class="s9-reflection-label">Planner's Note</div>
+          <div class="s9-reflection-text">
+            진행 곡선의 불일치와 BM 구조의 공백은 <em>설계 단계에서 충분히 예방할 수 있었던 문제</em>였다.
+            초반 보상 설계가 만들어낸 유저 기대를 후반까지 일관되게 유지하지 못한 점,
+            그리고 천장 시스템 없이 수집 완성 가능성을 열어두지 않은 점을 깊이 반성한다.
+            <em>앞으로의 기획에서는 전·후반 설계 철학의 일관성을 최우선으로 검토하고,
+            BM 구조는 유저가 "완성할 수 있다"는 믿음을 설계 초기부터 보장하는 방향으로 반영하겠다.</em>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+</div>
+
+<!-- UI Chrome -->
+<div id="progress-bar"><div id="progress-fill"></div></div>
+<div id="slide-number">01 / 09</div>
+<div id="breadcrumb">표지</div>
+<div id="nav-dots"></div>
+<button id="nav-prev" aria-label="이전 슬라이드">&#8249;</button>
+<button id="nav-next" aria-label="다음 슬라이드">&#8250;</button>
+
+<script>
+(function () {
+  const TOTAL = 9;
+  const TITLES = [
+    '표지', '게임 개요', '유저 평가 총평', '핵심 루프 설계',
+    '기획 설계 문제점', 'BM 설계 분석', '핵심 성과 지표',
+    '기획 문제점 & 대안', '종합 결론'
+  ];
+
+  let current = 0;
+  let locked = false;
+
+  const slides = document.querySelectorAll('.slide');
+  const bgs = document.querySelectorAll('.bg-mesh');
+  const fill = document.getElementById('progress-fill');
+  const numEl = document.getElementById('slide-number');
+  const crumb = document.getElementById('breadcrumb');
+  const dotsWrap = document.getElementById('nav-dots');
+  const btnPrev = document.getElementById('nav-prev');
+  const btnNext = document.getElementById('nav-next');
+
+  // Build dots
+  for (let i = 0; i < TOTAL; i++) {
+    const d = document.createElement('div');
+    d.className = 'nav-dot' + (i === 0 ? ' active' : '');
+    d.addEventListener('click', () => goTo(i));
+    dotsWrap.appendChild(d);
+  }
+
+  function updateUI() {
+    fill.style.width = ((current + 1) / TOTAL * 100) + '%';
+    numEl.textContent = String(current + 1).padStart(2, '0') + ' / ' + String(TOTAL).padStart(2, '0');
+    crumb.textContent = TITLES[current];
+    document.querySelectorAll('.nav-dot').forEach((d, i) => d.classList.toggle('active', i === current));
+    btnPrev.style.opacity = current === 0 ? '0.3' : '1';
+    btnNext.style.opacity = current === TOTAL - 1 ? '0.3' : '1';
+  }
+
+  function goTo(idx) {
+    if (locked || idx === current || idx < 0 || idx >= TOTAL) return;
+    locked = true;
+
+    slides[current].classList.remove('active');
+    bgs[current].classList.remove('active');
+
+    const prev = current;
+    current = idx;
+
+    // Small delay lets fade-out begin
+    setTimeout(() => {
+      slides[current].classList.add('active');
+      bgs[current].classList.add('active');
+      updateUI();
+      setTimeout(() => { locked = false; }, 350);
+    }, 60);
+  }
+
+  btnPrev.addEventListener('click', () => goTo(current - 1));
+  btnNext.addEventListener('click', () => goTo(current + 1));
+
+  document.addEventListener('keydown', (e) => {
+    if (['ArrowRight', 'ArrowDown', ' '].includes(e.key)) { e.preventDefault(); goTo(current + 1); }
+    if (['ArrowLeft', 'ArrowUp'].includes(e.key)) { e.preventDefault(); goTo(current - 1); }
+  });
+
+  // Touch swipe
+  let tx = 0, ty = 0;
+  document.addEventListener('touchstart', (e) => { tx = e.touches[0].clientX; ty = e.touches[0].clientY; }, { passive: true });
+  document.addEventListener('touchend', (e) => {
+    const dx = e.changedTouches[0].clientX - tx;
+    const dy = e.changedTouches[0].clientY - ty;
+    if (Math.abs(dx) > Math.abs(dy) && Math.abs(dx) > 44) {
+      dx < 0 ? goTo(current + 1) : goTo(current - 1);
+    }
+  });
+
+  // Custom cursor
+  const dot = document.getElementById('cursor-dot');
+  const ring = document.getElementById('cursor-ring');
+  document.addEventListener('mousemove', (e) => {
+    dot.style.left = e.clientX + 'px';
+    dot.style.top = e.clientY + 'px';
+    ring.style.left = e.clientX + 'px';
+    ring.style.top = e.clientY + 'px';
+  });
+
+  updateUI();
+})();
+</script>
+</body>
+</html>

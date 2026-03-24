@@ -1,0 +1,1582 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>NCT ZONE — 게임 기획자 시점 사후 분석 보고서</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;0,700;0,900;1,400;1,700&family=Bebas+Neue&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+  :root {
+    --bg: #080810;
+    --card: #0D0D20;
+    --accent1: #E040FB;
+    --accent2: #00E5FF;
+    --gold: #FFD700;
+    --text: #F0F0F0;
+    --text-muted: #8888AA;
+    --border: rgba(224, 64, 251, 0.18);
+  }
+
+  html { scroll-behavior: smooth; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'DM Sans', sans-serif;
+    font-weight: 400;
+    line-height: 1.7;
+    overflow-x: hidden;
+    cursor: none;
+  }
+
+  /* ── Custom Cursor ── */
+  #cursor-dot {
+    position: fixed;
+    width: 8px;
+    height: 8px;
+    background: var(--accent1);
+    border-radius: 50%;
+    pointer-events: none;
+    z-index: 9999;
+    transform: translate(-50%, -50%);
+    transition: transform 0.08s ease;
+    box-shadow: 0 0 10px 4px rgba(224,64,251,0.6), 0 0 24px 8px rgba(224,64,251,0.2);
+  }
+  #cursor-ring {
+    position: fixed;
+    width: 36px;
+    height: 36px;
+    border: 1.5px solid rgba(0,229,255,0.5);
+    border-radius: 50%;
+    pointer-events: none;
+    z-index: 9998;
+    transform: translate(-50%, -50%);
+    transition: all 0.18s ease;
+  }
+
+  /* ── Noise overlay ── */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.04'/%3E%3C/svg%3E");
+    pointer-events: none;
+    z-index: 1;
+    opacity: 0.4;
+  }
+
+  /* ── Scroll-reveal ── */
+  .reveal {
+    opacity: 0;
+    transform: translateY(40px);
+    transition: opacity 0.8s cubic-bezier(0.16,1,0.3,1), transform 0.8s cubic-bezier(0.16,1,0.3,1);
+  }
+  .reveal.visible { opacity: 1; transform: translateY(0); }
+  .reveal-left { opacity: 0; transform: translateX(-50px); transition: opacity 0.8s cubic-bezier(0.16,1,0.3,1), transform 0.8s cubic-bezier(0.16,1,0.3,1); }
+  .reveal-left.visible { opacity: 1; transform: translateX(0); }
+  .reveal-right { opacity: 0; transform: translateX(50px); transition: opacity 0.8s cubic-bezier(0.16,1,0.3,1), transform 0.8s cubic-bezier(0.16,1,0.3,1); }
+  .reveal-right.visible { opacity: 1; transform: translateX(0); }
+
+  /* ── Hero ── */
+  .hero {
+    position: relative;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: flex-start;
+    padding: 0 8vw;
+    overflow: hidden;
+  }
+
+  .hero-mesh {
+    position: absolute;
+    inset: 0;
+    background:
+      radial-gradient(ellipse 80% 60% at 70% 30%, rgba(224,64,251,0.18) 0%, transparent 60%),
+      radial-gradient(ellipse 60% 50% at 20% 80%, rgba(0,229,255,0.12) 0%, transparent 55%),
+      radial-gradient(ellipse 40% 40% at 85% 75%, rgba(255,215,0,0.07) 0%, transparent 50%),
+      var(--bg);
+    z-index: 0;
+  }
+
+  .hero-grid-lines {
+    position: absolute;
+    inset: 0;
+    background-image:
+      linear-gradient(rgba(224,64,251,0.04) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(224,64,251,0.04) 1px, transparent 1px);
+    background-size: 80px 80px;
+    z-index: 0;
+  }
+
+  .hero-label {
+    position: relative;
+    z-index: 2;
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: clamp(0.8rem, 1.2vw, 1rem);
+    letter-spacing: 0.4em;
+    color: var(--accent2);
+    margin-bottom: 2rem;
+    opacity: 0;
+    animation: fadeUp 0.8s 0.3s cubic-bezier(0.16,1,0.3,1) forwards;
+  }
+
+  .hero-title {
+    position: relative;
+    z-index: 2;
+    font-family: 'Playfair Display', serif;
+    font-size: clamp(5rem, 14vw, 14rem);
+    font-weight: 900;
+    line-height: 0.88;
+    letter-spacing: -0.02em;
+    background: linear-gradient(135deg, #fff 0%, var(--accent1) 50%, var(--accent2) 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    opacity: 0;
+    animation: fadeUp 1s 0.5s cubic-bezier(0.16,1,0.3,1) forwards;
+  }
+
+  .hero-title span {
+    display: block;
+    font-style: italic;
+    font-size: 0.55em;
+    background: linear-gradient(90deg, var(--accent2) 0%, #fff 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  .hero-subtitle {
+    position: relative;
+    z-index: 2;
+    margin-top: 2.5rem;
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: clamp(1rem, 2.5vw, 2rem);
+    letter-spacing: 0.1em;
+    color: var(--text-muted);
+    border-left: 3px solid var(--accent1);
+    padding-left: 1.5rem;
+    opacity: 0;
+    animation: fadeUp 0.8s 0.9s cubic-bezier(0.16,1,0.3,1) forwards;
+  }
+
+  .hero-meta {
+    position: relative;
+    z-index: 2;
+    display: flex;
+    gap: 3rem;
+    margin-top: 3.5rem;
+    opacity: 0;
+    animation: fadeUp 0.8s 1.2s cubic-bezier(0.16,1,0.3,1) forwards;
+  }
+
+  .hero-meta-item { display: flex; flex-direction: column; gap: 0.3rem; }
+  .hero-meta-item .meta-label {
+    font-size: 0.7rem;
+    letter-spacing: 0.25em;
+    color: var(--accent1);
+    font-family: 'Bebas Neue', sans-serif;
+  }
+  .hero-meta-item .meta-value {
+    font-size: 0.9rem;
+    color: var(--text-muted);
+    font-weight: 300;
+  }
+
+  .hero-scroll-cue {
+    position: absolute;
+    bottom: 3rem;
+    left: 8vw;
+    z-index: 2;
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    font-size: 0.75rem;
+    letter-spacing: 0.3em;
+    color: var(--text-muted);
+    font-family: 'Bebas Neue', sans-serif;
+    opacity: 0;
+    animation: fadeUp 0.8s 1.5s cubic-bezier(0.16,1,0.3,1) forwards;
+  }
+  .scroll-line {
+    width: 60px;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, var(--accent2));
+    animation: scrollPulse 2s infinite;
+  }
+
+  /* Large decorative number */
+  .hero-deco-num {
+    position: absolute;
+    right: -2vw;
+    top: 50%;
+    transform: translateY(-50%);
+    font-family: 'Playfair Display', serif;
+    font-size: 40vw;
+    font-weight: 900;
+    color: transparent;
+    -webkit-text-stroke: 1px rgba(224,64,251,0.05);
+    line-height: 1;
+    z-index: 0;
+    user-select: none;
+    pointer-events: none;
+  }
+
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(30px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  @keyframes scrollPulse {
+    0%, 100% { opacity: 0.4; transform: scaleX(1); }
+    50% { opacity: 1; transform: scaleX(1.2); }
+  }
+
+  /* ── Diagonal divider ── */
+  .skew-divider {
+    height: 80px;
+    background: var(--card);
+    clip-path: polygon(0 100%, 100% 0, 100% 100%);
+    margin-top: -1px;
+  }
+  .skew-divider-rev {
+    height: 80px;
+    background: var(--bg);
+    clip-path: polygon(0 0, 100% 100%, 0 100%);
+    margin-bottom: -1px;
+  }
+
+  /* ── Section base ── */
+  section { position: relative; z-index: 2; }
+
+  .section-dark { background: var(--bg); padding: 100px 8vw; }
+  .section-card { background: var(--card); padding: 100px 8vw; }
+
+  .section-eyebrow {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 0.85rem;
+    letter-spacing: 0.4em;
+    color: var(--accent1);
+    margin-bottom: 1rem;
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+  }
+  .section-eyebrow::before {
+    content: '';
+    display: inline-block;
+    width: 40px;
+    height: 1px;
+    background: var(--accent1);
+  }
+
+  .section-title {
+    font-family: 'Playfair Display', serif;
+    font-size: clamp(2.2rem, 5vw, 4.5rem);
+    font-weight: 700;
+    line-height: 1.1;
+    margin-bottom: 1rem;
+  }
+
+  .section-title em {
+    font-style: italic;
+    color: var(--accent1);
+  }
+
+  .section-divider {
+    width: 80px;
+    height: 3px;
+    background: linear-gradient(90deg, var(--accent1), var(--accent2));
+    margin: 1.5rem 0 3rem;
+    border-radius: 2px;
+  }
+
+  /* ── Overview Section ── */
+  .overview-grid {
+    display: grid;
+    grid-template-columns: 1fr 1.6fr;
+    gap: 4rem;
+    align-items: start;
+  }
+
+  .info-table {
+    background: rgba(13,13,32,0.8);
+    border: 1px solid var(--border);
+    border-radius: 2px;
+    overflow: hidden;
+    backdrop-filter: blur(10px);
+  }
+
+  .info-table-row {
+    display: grid;
+    grid-template-columns: 140px 1fr;
+    border-bottom: 1px solid rgba(224,64,251,0.08);
+  }
+  .info-table-row:last-child { border-bottom: none; }
+  .info-table-row .label {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 0.8rem;
+    letter-spacing: 0.15em;
+    color: var(--accent2);
+    padding: 1rem 1.2rem;
+    border-right: 1px solid rgba(224,64,251,0.08);
+    background: rgba(0,229,255,0.03);
+  }
+  .info-table-row .val {
+    padding: 1rem 1.2rem;
+    font-size: 0.9rem;
+    color: var(--text-muted);
+  }
+  .info-table-row .val strong { color: var(--text); font-weight: 500; }
+
+  /* 3-axis cards */
+  .axis-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 0;
+    border-radius: 2px;
+    overflow: hidden;
+    border: 1px solid var(--border);
+  }
+
+  .axis-card {
+    padding: 2.5rem 2rem;
+    background: rgba(13,13,32,0.6);
+    backdrop-filter: blur(10px);
+    border-right: 1px solid var(--border);
+    position: relative;
+    overflow: hidden;
+    transition: background 0.3s;
+  }
+  .axis-card:last-child { border-right: none; }
+  .axis-card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 2px;
+  }
+  .axis-card.kwangya::before { background: var(--accent1); }
+  .axis-card.neozone::before { background: var(--accent2); }
+  .axis-card.lobby::before { background: var(--gold); }
+  .axis-card:hover { background: rgba(224,64,251,0.05); }
+
+  .axis-tag {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 0.75rem;
+    letter-spacing: 0.3em;
+    margin-bottom: 0.8rem;
+  }
+  .axis-card.kwangya .axis-tag { color: var(--accent1); }
+  .axis-card.neozone .axis-tag { color: var(--accent2); }
+  .axis-card.lobby .axis-tag { color: var(--gold); }
+
+  .axis-name {
+    font-family: 'Playfair Display', serif;
+    font-size: 1.5rem;
+    font-weight: 700;
+    margin-bottom: 0.8rem;
+    line-height: 1.2;
+  }
+  .axis-desc { font-size: 0.85rem; color: var(--text-muted); line-height: 1.6; }
+
+  /* ── Evaluation Section ── */
+  .eval-layout {
+    display: grid;
+    grid-template-columns: 280px 1fr;
+    gap: 5rem;
+    align-items: start;
+  }
+
+  .score-block {
+    text-align: center;
+    padding: 3rem 2rem;
+    background: rgba(13,13,32,0.8);
+    border: 1px solid var(--border);
+    backdrop-filter: blur(20px);
+    position: relative;
+    overflow: hidden;
+  }
+  .score-block::before {
+    content: '';
+    position: absolute;
+    inset: -1px;
+    background: linear-gradient(135deg, var(--accent1), var(--accent2));
+    border-radius: inherit;
+    z-index: -1;
+    opacity: 0.3;
+  }
+  .score-platform {
+    font-family: 'Bebas Neue', sans-serif;
+    letter-spacing: 0.3em;
+    font-size: 0.8rem;
+    color: var(--accent2);
+    margin-bottom: 1rem;
+  }
+  .score-number {
+    font-family: 'Playfair Display', serif;
+    font-size: 6rem;
+    font-weight: 900;
+    line-height: 1;
+    background: linear-gradient(135deg, var(--gold), var(--accent1));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+  .score-suffix {
+    font-family: 'DM Sans', sans-serif;
+    font-size: 1.5rem;
+    color: var(--text-muted);
+    margin-top: -0.5rem;
+  }
+  .retention-badge {
+    margin-top: 2rem;
+    padding: 1rem;
+    background: rgba(0,229,255,0.08);
+    border: 1px solid rgba(0,229,255,0.2);
+    border-radius: 2px;
+  }
+  .retention-val {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 2.5rem;
+    color: var(--accent2);
+  }
+  .retention-label { font-size: 0.75rem; color: var(--text-muted); letter-spacing: 0.15em; }
+
+  .eval-analysis { display: flex; flex-direction: column; gap: 1.5rem; }
+
+  .analysis-point {
+    padding: 1.5rem 2rem;
+    background: rgba(255,255,255,0.02);
+    border-left: 3px solid;
+    position: relative;
+  }
+  .analysis-point.positive { border-color: var(--accent2); }
+  .analysis-point.insight { border-color: var(--accent1); }
+  .analysis-point.warning { border-color: var(--gold); }
+
+  .point-tag {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 0.72rem;
+    letter-spacing: 0.3em;
+    margin-bottom: 0.5rem;
+  }
+  .analysis-point.positive .point-tag { color: var(--accent2); }
+  .analysis-point.insight .point-tag { color: var(--accent1); }
+  .analysis-point.warning .point-tag { color: var(--gold); }
+  .analysis-point p { font-size: 0.9rem; color: var(--text-muted); }
+
+  /* ── Loop Section ── */
+  .loop-flow {
+    display: flex;
+    align-items: stretch;
+    gap: 0;
+    margin-bottom: 4rem;
+    overflow-x: auto;
+    padding-bottom: 1rem;
+  }
+
+  .loop-step {
+    flex: 1;
+    min-width: 140px;
+    padding: 1.5rem 1.2rem;
+    background: rgba(13,13,32,0.9);
+    border: 1px solid var(--border);
+    border-right: none;
+    position: relative;
+    text-align: center;
+    transition: background 0.3s;
+  }
+  .loop-step:last-child { border-right: 1px solid var(--border); }
+  .loop-step::after {
+    content: '→';
+    position: absolute;
+    right: -13px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: var(--accent1);
+    font-size: 1.2rem;
+    z-index: 5;
+    font-weight: bold;
+  }
+  .loop-step:last-child::after { display: none; }
+  .loop-step:hover { background: rgba(224,64,251,0.06); }
+
+  .loop-icon {
+    font-size: 1.8rem;
+    margin-bottom: 0.6rem;
+    display: block;
+  }
+  .loop-step-name {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 0.85rem;
+    letter-spacing: 0.15em;
+    color: var(--accent1);
+    margin-bottom: 0.4rem;
+  }
+  .loop-step-desc { font-size: 0.78rem; color: var(--text-muted); }
+
+  .loop-bottom-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 2rem;
+  }
+
+  .loop-card {
+    padding: 2rem;
+    background: rgba(13,13,32,0.6);
+    border: 1px solid var(--border);
+    backdrop-filter: blur(10px);
+    position: relative;
+    overflow: hidden;
+    transition: transform 0.3s, border-color 0.3s;
+  }
+  .loop-card:hover {
+    transform: translateY(-4px);
+    border-color: var(--accent1);
+  }
+  .loop-card-num {
+    font-family: 'Playfair Display', serif;
+    font-size: 4rem;
+    font-weight: 900;
+    color: transparent;
+    -webkit-text-stroke: 1px rgba(224,64,251,0.15);
+    position: absolute;
+    top: -1rem;
+    right: 1rem;
+    line-height: 1;
+    user-select: none;
+  }
+  .loop-card-title {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 1.1rem;
+    letter-spacing: 0.15em;
+    color: var(--accent2);
+    margin-bottom: 0.8rem;
+  }
+  .loop-card p { font-size: 0.85rem; color: var(--text-muted); }
+
+  /* ── Problems Section ── */
+  .problem-grid { display: flex; flex-direction: column; gap: 3rem; }
+
+  .problem-item {
+    display: grid;
+    grid-template-columns: 1fr 1.2fr;
+    gap: 3rem;
+    padding: 2.5rem;
+    background: rgba(13,13,32,0.6);
+    border: 1px solid rgba(255,70,70,0.15);
+    position: relative;
+    overflow: hidden;
+    transition: border-color 0.3s;
+  }
+  .problem-item:hover { border-color: rgba(255,70,70,0.3); }
+  .problem-item::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0;
+    width: 3px;
+    height: 100%;
+    background: linear-gradient(180deg, #FF4545, #FF8C00);
+  }
+
+  .problem-header { display: flex; flex-direction: column; gap: 0.8rem; }
+  .problem-tag {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 0.75rem;
+    letter-spacing: 0.3em;
+    color: #FF6B6B;
+  }
+  .problem-title {
+    font-family: 'Playfair Display', serif;
+    font-size: 1.4rem;
+    font-weight: 700;
+    color: var(--text);
+    line-height: 1.3;
+  }
+  .problem-desc { font-size: 0.88rem; color: var(--text-muted); margin-top: 0.5rem; }
+
+  .solution-side { display: flex; flex-direction: column; gap: 1rem; }
+  .solution-label {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 0.75rem;
+    letter-spacing: 0.3em;
+    color: var(--accent2);
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+  .solution-label::before {
+    content: '';
+    width: 20px;
+    height: 1px;
+    background: var(--accent2);
+  }
+  .solution-list { list-style: none; display: flex; flex-direction: column; gap: 0.6rem; }
+  .solution-list li {
+    font-size: 0.88rem;
+    color: var(--text-muted);
+    padding-left: 1.2rem;
+    position: relative;
+  }
+  .solution-list li::before {
+    content: '→';
+    position: absolute;
+    left: 0;
+    color: var(--accent2);
+    font-size: 0.8rem;
+  }
+
+  /* ── BM Section ── */
+  .bm-layout {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 3rem;
+    margin-bottom: 3rem;
+  }
+
+  .bm-col { display: flex; flex-direction: column; gap: 1.5rem; }
+
+  .bm-card {
+    padding: 2rem;
+    background: rgba(13,13,32,0.8);
+    border: 1px solid var(--border);
+    backdrop-filter: blur(10px);
+  }
+
+  .bm-card-title {
+    font-family: 'Bebas Neue', sans-serif;
+    letter-spacing: 0.2em;
+    font-size: 0.9rem;
+    color: var(--accent1);
+    margin-bottom: 1rem;
+  }
+
+  .bm-axes {
+    display: flex;
+    gap: 1rem;
+    margin-bottom: 0.5rem;
+  }
+  .bm-axis-pill {
+    padding: 0.4rem 1rem;
+    border-radius: 2px;
+    font-size: 0.8rem;
+    font-family: 'Bebas Neue', sans-serif;
+    letter-spacing: 0.1em;
+  }
+  .bm-axis-pill.p { background: rgba(224,64,251,0.15); color: var(--accent1); border: 1px solid rgba(224,64,251,0.3); }
+  .bm-axis-pill.s { background: rgba(0,229,255,0.1); color: var(--accent2); border: 1px solid rgba(0,229,255,0.2); }
+
+  .bm-reactions { display: flex; flex-direction: column; gap: 0.8rem; }
+  .reaction-row { display: flex; gap: 1rem; align-items: flex-start; }
+  .reaction-badge {
+    flex-shrink: 0;
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 0.7rem;
+    letter-spacing: 0.2em;
+    padding: 0.2rem 0.7rem;
+    border-radius: 2px;
+  }
+  .reaction-badge.pos { background: rgba(0,229,255,0.1); color: var(--accent2); border: 1px solid rgba(0,229,255,0.25); }
+  .reaction-badge.neg { background: rgba(255,69,69,0.1); color: #FF6B6B; border: 1px solid rgba(255,69,69,0.25); }
+  .reaction-text { font-size: 0.83rem; color: var(--text-muted); }
+
+  .insight-banner {
+    padding: 2rem 2.5rem;
+    background: rgba(224,64,251,0.06);
+    border: 1px solid rgba(224,64,251,0.25);
+    border-left: 4px solid var(--accent1);
+    font-family: 'Playfair Display', serif;
+    font-size: 1.15rem;
+    font-style: italic;
+    color: var(--text);
+    line-height: 1.6;
+  }
+
+  /* ── KPI Section ── */
+  .kpi-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 1.5rem;
+  }
+
+  .kpi-card {
+    padding: 2.5rem 2rem;
+    background: rgba(13,13,32,0.9);
+    border: 1px solid var(--border);
+    backdrop-filter: blur(20px);
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+    transition: transform 0.3s, border-color 0.3s;
+  }
+  .kpi-card::before {
+    content: '';
+    position: absolute;
+    bottom: 0; left: 0; right: 0;
+    height: 2px;
+  }
+  .kpi-card:nth-child(1)::before { background: var(--accent2); }
+  .kpi-card:nth-child(2)::before { background: var(--accent1); }
+  .kpi-card:nth-child(3)::before { background: var(--gold); }
+  .kpi-card:nth-child(4)::before { background: linear-gradient(90deg, var(--accent1), var(--accent2)); }
+  .kpi-card:hover {
+    transform: translateY(-6px);
+    border-color: var(--accent1);
+  }
+  .kpi-glow {
+    position: absolute;
+    inset: 0;
+    opacity: 0;
+    transition: opacity 0.3s;
+    background: radial-gradient(ellipse at center, rgba(224,64,251,0.08), transparent 70%);
+  }
+  .kpi-card:hover .kpi-glow { opacity: 1; }
+
+  .kpi-val {
+    font-family: 'Playfair Display', serif;
+    font-size: clamp(2.5rem, 4vw, 4rem);
+    font-weight: 900;
+    line-height: 1;
+    margin-bottom: 0.4rem;
+  }
+  .kpi-card:nth-child(1) .kpi-val { color: var(--accent2); }
+  .kpi-card:nth-child(2) .kpi-val { color: var(--accent1); }
+  .kpi-card:nth-child(3) .kpi-val { color: var(--gold); }
+  .kpi-card:nth-child(4) .kpi-val {
+    background: linear-gradient(135deg, var(--accent1), var(--accent2));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+  .kpi-label {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 0.75rem;
+    letter-spacing: 0.25em;
+    color: var(--text-muted);
+    margin-top: 0.4rem;
+  }
+  .kpi-sub { font-size: 0.78rem; color: rgba(136,136,170,0.7); margin-top: 0.8rem; }
+
+  /* ── Problem Summary Table ── */
+  .prob-table {
+    width: 100%;
+    border-collapse: separate;
+    border-spacing: 0;
+    border: 1px solid var(--border);
+    overflow: hidden;
+  }
+  .prob-table thead tr {
+    background: rgba(224,64,251,0.08);
+  }
+  .prob-table th {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 0.8rem;
+    letter-spacing: 0.25em;
+    color: var(--accent1);
+    padding: 1rem 1.5rem;
+    text-align: left;
+    border-bottom: 1px solid var(--border);
+  }
+  .prob-table td {
+    padding: 1.1rem 1.5rem;
+    font-size: 0.88rem;
+    color: var(--text-muted);
+    border-bottom: 1px solid rgba(224,64,251,0.06);
+    vertical-align: top;
+  }
+  .prob-table tr:last-child td { border-bottom: none; }
+  .prob-table tbody tr { transition: background 0.2s; }
+  .prob-table tbody tr:hover { background: rgba(224,64,251,0.04); }
+  .prob-table td:first-child { color: var(--accent2); font-weight: 500; font-family: 'Bebas Neue', sans-serif; letter-spacing: 0.1em; font-size: 0.9rem; }
+  .prob-table td.alt-cell { color: var(--text); }
+
+  /* ── Conclusion ── */
+  .conclusion-hero {
+    text-align: center;
+    padding: 6rem 8vw;
+    position: relative;
+    overflow: hidden;
+  }
+  .conclusion-mesh {
+    position: absolute;
+    inset: 0;
+    background:
+      radial-gradient(ellipse 70% 60% at 50% 50%, rgba(224,64,251,0.12) 0%, transparent 60%),
+      radial-gradient(ellipse 40% 40% at 20% 30%, rgba(0,229,255,0.08) 0%, transparent 50%);
+  }
+  .conclusion-verdict {
+    position: relative;
+    z-index: 2;
+    font-family: 'Playfair Display', serif;
+    font-size: clamp(1.6rem, 3.5vw, 3rem);
+    font-weight: 700;
+    line-height: 1.3;
+    max-width: 800px;
+    margin: 0 auto 3rem;
+  }
+  .conclusion-verdict em {
+    font-style: italic;
+    background: linear-gradient(90deg, var(--accent1), var(--accent2));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+  .conclusion-kpis {
+    position: relative;
+    z-index: 2;
+    display: flex;
+    justify-content: center;
+    gap: 4rem;
+    margin-top: 3rem;
+    flex-wrap: wrap;
+  }
+  .concl-kpi { text-align: center; }
+  .concl-kpi .num {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: clamp(2rem, 4vw, 3.5rem);
+    background: linear-gradient(135deg, var(--gold), var(--accent1));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+  .concl-kpi .txt { font-size: 0.82rem; color: var(--text-muted); margin-top: 0.3rem; letter-spacing: 0.1em; }
+
+  /* ── Footer ── */
+  footer {
+    background: #04040C;
+    padding: 4rem 8vw;
+    border-top: 1px solid rgba(224,64,251,0.1);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 2rem;
+  }
+  .footer-brand {
+    font-family: 'Playfair Display', serif;
+    font-size: 1.5rem;
+    font-weight: 700;
+    background: linear-gradient(90deg, var(--accent1), var(--accent2));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+  .footer-info { font-size: 0.8rem; color: var(--text-muted); line-height: 1.8; }
+
+  /* ── Floating orbs ── */
+  .orb {
+    position: fixed;
+    border-radius: 50%;
+    filter: blur(80px);
+    pointer-events: none;
+    z-index: 0;
+    animation: orbFloat 20s infinite ease-in-out;
+  }
+  .orb1 {
+    width: 400px; height: 400px;
+    background: rgba(224,64,251,0.06);
+    top: 10%; left: -10%;
+    animation-delay: 0s;
+  }
+  .orb2 {
+    width: 300px; height: 300px;
+    background: rgba(0,229,255,0.05);
+    top: 60%; right: -5%;
+    animation-delay: -7s;
+  }
+  @keyframes orbFloat {
+    0%, 100% { transform: translate(0, 0); }
+    33% { transform: translate(30px, -20px); }
+    66% { transform: translate(-20px, 30px); }
+  }
+
+  /* ── Asymmetric pull-out quote ── */
+  .pull-quote {
+    margin: 3rem -4vw;
+    padding: 3rem 6vw;
+    background: rgba(224,64,251,0.05);
+    border-top: 1px solid rgba(224,64,251,0.15);
+    border-bottom: 1px solid rgba(224,64,251,0.15);
+    position: relative;
+  }
+  .pull-quote::before {
+    content: '"';
+    font-family: 'Playfair Display', serif;
+    font-size: 8rem;
+    color: rgba(224,64,251,0.12);
+    position: absolute;
+    top: -1rem;
+    left: 4vw;
+    line-height: 1;
+  }
+  .pull-quote p {
+    font-family: 'Playfair Display', serif;
+    font-size: clamp(1.1rem, 2vw, 1.6rem);
+    font-style: italic;
+    color: var(--text);
+    max-width: 800px;
+    padding-left: 2rem;
+    line-height: 1.6;
+  }
+
+  /* Responsive */
+  @media (max-width: 900px) {
+    .overview-grid { grid-template-columns: 1fr; }
+    .eval-layout { grid-template-columns: 1fr; }
+    .bm-layout { grid-template-columns: 1fr; }
+    .kpi-grid { grid-template-columns: repeat(2, 1fr); }
+    .loop-bottom-grid { grid-template-columns: 1fr; }
+    .problem-item { grid-template-columns: 1fr; }
+    .axis-grid { grid-template-columns: 1fr; }
+    .hero-meta { flex-wrap: wrap; gap: 1.5rem; }
+  }
+  @media (max-width: 600px) {
+    .kpi-grid { grid-template-columns: 1fr 1fr; }
+    .section-dark, .section-card { padding: 70px 5vw; }
+    .conclusion-hero { padding: 5rem 5vw; }
+    footer { padding: 3rem 5vw; }
+    .prob-table { font-size: 0.8rem; }
+    .prob-table td, .prob-table th { padding: 0.8rem 1rem; }
+  }
+
+  /* Stagger delays */
+  .stagger-1 { transition-delay: 0.1s; }
+  .stagger-2 { transition-delay: 0.2s; }
+  .stagger-3 { transition-delay: 0.3s; }
+  .stagger-4 { transition-delay: 0.4s; }
+  .stagger-5 { transition-delay: 0.5s; }
+
+  /* Glitch text animation on hero */
+  @keyframes glitch {
+    0% { text-shadow: 0.05em 0 0 rgba(224,64,251,0.75), -0.025em -0.05em 0 rgba(0,229,255,0.75); }
+    14% { text-shadow: 0.05em 0 0 rgba(224,64,251,0.75), -0.025em -0.05em 0 rgba(0,229,255,0.75); }
+    15% { text-shadow: -0.05em -0.025em 0 rgba(224,64,251,0.75), 0.025em 0.025em 0 rgba(0,229,255,0.75); }
+    49% { text-shadow: -0.05em -0.025em 0 rgba(224,64,251,0.75), 0.025em 0.025em 0 rgba(0,229,255,0.75); }
+    50% { text-shadow: 0.025em 0.05em 0 rgba(224,64,251,0.75), 0.05em 0 0 rgba(0,229,255,0.75); }
+    99% { text-shadow: 0.025em 0.05em 0 rgba(224,64,251,0.75), 0.05em 0 0 rgba(0,229,255,0.75); }
+    100% { text-shadow: -0.025em 0 0 rgba(224,64,251,0.75), -0.025em -0.025em 0 rgba(0,229,255,0.75); }
+  }
+
+  /* Neon border glow animation */
+  @keyframes borderPulse {
+    0%, 100% { box-shadow: 0 0 10px rgba(224,64,251,0.2), inset 0 0 10px rgba(224,64,251,0.02); }
+    50% { box-shadow: 0 0 20px rgba(224,64,251,0.4), inset 0 0 20px rgba(224,64,251,0.04); }
+  }
+
+  .kpi-card { animation: borderPulse 3s infinite; }
+  .kpi-card:nth-child(2) { animation-delay: 0.5s; }
+  .kpi-card:nth-child(3) { animation-delay: 1s; }
+  .kpi-card:nth-child(4) { animation-delay: 1.5s; }
+</style>
+</head>
+<body>
+
+<div id="cursor-dot"></div>
+<div id="cursor-ring"></div>
+<div class="orb orb1"></div>
+<div class="orb orb2"></div>
+
+<!-- ═══════════════════ HERO ═══════════════════ -->
+<section class="hero">
+  <div class="hero-mesh"></div>
+  <div class="hero-grid-lines"></div>
+  <div class="hero-deco-num">N</div>
+
+  <p class="hero-label">GAME DESIGN POST-MORTEM ANALYSIS</p>
+
+  <h1 class="hero-title">
+    NCT<br>
+    <span>ZONE</span>
+  </h1>
+
+  <p class="hero-subtitle">게임 기획자 시점 사후 분석 보고서</p>
+
+  <div class="hero-meta">
+    <div class="hero-meta-item">
+      <span class="meta-label">개발사</span>
+      <span class="meta-value">SM Entertainment × NetEase</span>
+    </div>
+    <div class="hero-meta-item">
+      <span class="meta-label">장르</span>
+      <span class="meta-value">리듬 RPG / 팬덤 수집</span>
+    </div>
+    <div class="hero-meta-item">
+      <span class="meta-label">IP</span>
+      <span class="meta-value">NCT 25인</span>
+    </div>
+    <div class="hero-meta-item">
+      <span class="meta-label">분석 관점</span>
+      <span class="meta-value">루프 · BM · 리텐션</span>
+    </div>
+  </div>
+
+  <div class="hero-scroll-cue">
+    <span class="scroll-line"></span>
+    SCROLL TO EXPLORE
+  </div>
+</section>
+
+<!-- ═══════════════════ 01 게임 개요 ═══════════════════ -->
+<div style="height:80px;background:linear-gradient(180deg,var(--bg) 0%,var(--card) 100%);"></div>
+<section class="section-card">
+  <div class="section-eyebrow reveal">01 — OVERVIEW</div>
+  <h2 class="section-title reveal">게임 <em>개요</em></h2>
+  <div class="section-divider reveal"></div>
+
+  <div class="overview-grid">
+    <div class="reveal-left">
+      <div class="info-table">
+        <div class="info-table-row">
+          <span class="label">타이틀</span>
+          <span class="val"><strong>NCT ZONE</strong></span>
+        </div>
+        <div class="info-table-row">
+          <span class="label">장르</span>
+          <span class="val">리듬 RPG + 팬덤 수집</span>
+        </div>
+        <div class="info-table-row">
+          <span class="label">IP</span>
+          <span class="val">NCT (SM Ent.) — <strong>25인</strong></span>
+        </div>
+        <div class="info-table-row">
+          <span class="label">카드 볼륨</span>
+          <span class="val"><strong>400종+</strong> 멤버 카드</span>
+        </div>
+        <div class="info-table-row">
+          <span class="label">플랫폼</span>
+          <span class="val">iOS / Android (글로벌)</span>
+        </div>
+        <div class="info-table-row">
+          <span class="label">평가</span>
+          <span class="val">TapTap <strong>7.6</strong> / 10</span>
+        </div>
+        <div class="info-table-row">
+          <span class="label">D+30 리텐션</span>
+          <span class="val"><strong>70%</strong> (팬덤 코어 기준)</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="reveal-right">
+      <p style="font-size:0.9rem;color:var(--text-muted);margin-bottom:2rem;line-height:1.8;">
+        NCT ZONE은 K-pop 그룹 NCT의 IP를 기반으로 한 팬덤 수집형 리듬 RPG다. 25인의 멤버 카드 400종 이상을 수집하고, 3개의 독립된 콘텐츠 축(KWANGYA / NEOZONE / LOBBY)을 통해 팬덤 소비를 극대화한 구조를 가진다. 본 보고서는 루프 설계, BM 구조, 리텐션 동인을 기획자 시점에서 해부한다.
+      </p>
+      <p style="font-family:'Bebas Neue',sans-serif;letter-spacing:0.2em;font-size:0.85rem;color:var(--accent1);margin-bottom:1.2rem;">3축 콘텐츠 구조</p>
+      <div class="axis-grid">
+        <div class="axis-card kwangya reveal stagger-1">
+          <div class="axis-tag">AXIS 01</div>
+          <div class="axis-name">KWANGYA</div>
+          <div class="axis-desc">도전 · 진행<br>스테이지 기반 리듬 게임, 에너지 소비 중심의 메인 콘텐츠</div>
+        </div>
+        <div class="axis-card neozone reveal stagger-2">
+          <div class="axis-tag">AXIS 02</div>
+          <div class="axis-name">NEOZONE</div>
+          <div class="axis-desc">소유 · 꾸미기<br>멤버 카드 수집, 인테리어, 개인화 공간</div>
+        </div>
+        <div class="axis-card lobby reveal stagger-3">
+          <div class="axis-tag">AXIS 03</div>
+          <div class="axis-name">LOBBY</div>
+          <div class="axis-desc">감성 소비<br>꼬마즈 인터랙션, 멤버 스토리, 감성 연결</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════ 02 유저 평가 ═══════════════════ -->
+<div style="height:80px;background:linear-gradient(180deg,var(--card) 0%,var(--bg) 100%);"></div>
+<section class="section-dark">
+  <div class="section-eyebrow reveal">02 — USER EVALUATION</div>
+  <h2 class="section-title reveal">유저 평가 <em>총평</em></h2>
+  <div class="section-divider reveal"></div>
+
+  <div class="eval-layout">
+    <div class="reveal-left">
+      <div class="score-block">
+        <div class="score-platform">TAPTAP SCORE</div>
+        <div class="score-number">7.6</div>
+        <div class="score-suffix">/ 10.0</div>
+        <div class="retention-badge">
+          <div class="retention-val">70%</div>
+          <div class="retention-label">D+30 RETENTION · 코어 팬덤</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="eval-analysis reveal-right">
+      <div class="analysis-point positive">
+        <div class="point-tag">POSITIVE SIGNAL</div>
+        <p>초반 무료 보상이 관대하게 설계되어 팬덤 유입 장벽이 낮다. IP 인지도와 감성적 콘텐츠(멤버 스토리, 꼬마즈)가 높은 초반 리텐션을 이끌어냈다.</p>
+      </div>
+      <div class="analysis-point warning">
+        <div class="point-tag">DESIGN TENSION</div>
+        <p>후반부 에너지 소모량 급증으로 진행 곡선이 꺾이면서 캐주얼 팬 이탈이 발생한다. TapTap 7.6점은 팬덤 코어의 지지를 반영하나 대중 확장에는 한계를 시사한다.</p>
+      </div>
+      <div class="analysis-point insight">
+        <div class="point-tag">DESIGN INSIGHT</div>
+        <p>D+30 리텐션 70%는 팬덤 IP 게임의 강점을 증명한다. 수집 루프와 팬덤 소유 욕구가 정확히 맞물려 장기 목표를 자연스럽게 형성하는 데 성공했다.</p>
+      </div>
+      <div class="analysis-point insight">
+        <div class="point-tag">PLANNER PERSPECTIVE</div>
+        <p>팬덤 게임의 핵심 지표는 일반 게임의 공식과 다르다. '즐거움'보다 '소유감'과 '감성 연결'이 체류를 결정한다. NCT ZONE은 이 원리를 상당 부분 구현했다.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════ 03 핵심 루프 ═══════════════════ -->
+<div style="height:80px;background:linear-gradient(180deg,var(--bg) 0%,var(--card) 100%);"></div>
+<section class="section-card">
+  <div class="section-eyebrow reveal">03 — CORE LOOP DESIGN</div>
+  <h2 class="section-title reveal">핵심 루프 설계 — <em>무엇이 작동했나</em></h2>
+  <div class="section-divider reveal"></div>
+
+  <p style="font-family:'Bebas Neue',sans-serif;letter-spacing:0.25em;font-size:0.85rem;color:var(--accent2);margin-bottom:1.5rem;" class="reveal">수집 코어 루프 흐름</p>
+
+  <div class="loop-flow reveal">
+    <div class="loop-step">
+      <span class="loop-icon">⚔️</span>
+      <div class="loop-step-name">스테이지 플레이</div>
+      <div class="loop-step-desc">KWANGYA 리듬 게임</div>
+    </div>
+    <div class="loop-step">
+      <span class="loop-icon">💎</span>
+      <div class="loop-step-name">젬·카드 획득</div>
+      <div class="loop-step-desc">클리어 보상</div>
+    </div>
+    <div class="loop-step">
+      <span class="loop-icon">🎰</span>
+      <div class="loop-step-name">가챠 소환</div>
+      <div class="loop-step-desc">멤버 카드 뽑기</div>
+    </div>
+    <div class="loop-step">
+      <span class="loop-icon">📖</span>
+      <div class="loop-step-name">스토리 해금</div>
+      <div class="loop-step-desc">멤버별 서사 개방</div>
+    </div>
+    <div class="loop-step">
+      <span class="loop-icon">🎯</span>
+      <div class="loop-step-name">다음 카드 목표</div>
+      <div class="loop-step-desc">수집 욕구 재점화</div>
+    </div>
+  </div>
+
+  <div class="loop-bottom-grid">
+    <div class="loop-card reveal stagger-1">
+      <div class="loop-card-num">01</div>
+      <div class="loop-card-title">팬덤 동기와 루프의 정합성</div>
+      <p>수집 루프의 목표가 팬덤 소유 욕구와 정확히 일치한다. 멤버별 스토리 연동으로 카드 1장마다 독립적인 수집 가치가 부여되고, 400종+ 볼륨이 장기 수집 목표를 자연스럽게 형성한다.</p>
+    </div>
+    <div class="loop-card reveal stagger-2">
+      <div class="loop-card-num">02</div>
+      <div class="loop-card-title">3축 루프 역할 분리</div>
+      <p>KWANGYA는 도전·진행, NEOZONE은 소유·꾸미기, LOBBY는 감성 소비라는 명확한 역할 분리로 각기 다른 팬덤 동기를 충족시키는 구조를 완성했다.</p>
+    </div>
+    <div class="loop-card reveal stagger-3">
+      <div class="loop-card-num">03</div>
+      <div class="loop-card-title">감성 인터랙션 설계 효과</div>
+      <p>꼬마즈 댄스·대화 시스템이 에너지 소진 후에도 접속 이유를 제공한다. "달콤하고 귀엽다"는 유저 반응이 LOBBY를 단순 대기 공간에서 독립적 방문 목적으로 격상시켰다.</p>
+    </div>
+  </div>
+
+  <div class="pull-quote">
+    <p>수집 루프가 팬덤의 심리적 소유 욕구와 정렬될 때, 게임은 콘텐츠가 아니라 팬덤 경험 그 자체가 된다.</p>
+  </div>
+</section>
+
+<!-- ═══════════════════ 04 기획 문제점 ═══════════════════ -->
+<div style="height:80px;background:linear-gradient(180deg,var(--card) 0%,var(--bg) 100%);"></div>
+<section class="section-dark">
+  <div class="section-eyebrow reveal">04 — DESIGN PROBLEMS</div>
+  <h2 class="section-title reveal">기획 설계 문제점 — <em>무엇이 아쉬웠나</em></h2>
+  <div class="section-divider reveal"></div>
+
+  <div class="problem-grid">
+
+    <div class="problem-item reveal">
+      <div class="problem-header">
+        <div class="problem-tag">PROBLEM 01 · 진행 곡선</div>
+        <div class="problem-title">초반 관대 → 후반 에너지 급증의 기대 배반</div>
+        <div class="problem-desc">초반의 관대한 보상 설계가 "이 게임은 유저 친화적"이라는 기대치를 형성하지만, 후반 에너지 소모 급증이 그 기대를 정면으로 배반한다. 기대-현실 갭이 이탈의 직접적 원인이 된다.</div>
+      </div>
+      <div class="solution-side">
+        <div class="solution-label">DESIGN ALTERNATIVES</div>
+        <ul class="solution-list">
+          <li>완만한 로그 스케일 에너지 곡선으로 재설계</li>
+          <li>전·후반 보상 밀도 일관성 유지</li>
+          <li>과금 압박은 이벤트 콘텐츠로 분리하여 메인 루프 보호</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="problem-item reveal stagger-1">
+      <div class="problem-header">
+        <div class="problem-tag">PROBLEM 02 · 콘텐츠 개방</div>
+        <div class="problem-title">NEOZONE Lv.5 개방 — 핵심 팬 서비스의 지연</div>
+        <div class="problem-desc">NEOZONE은 팬덤의 소유·꾸미기 욕구를 직접적으로 충족하는 핵심 콘텐츠다. 그러나 Lv.5 이후 개방 구조는 초반 이탈 구간에서 팬 서비스를 제공하지 못하는 역설적 결과를 낳는다.</div>
+      </div>
+      <div class="solution-side">
+        <div class="solution-label">DESIGN ALTERNATIVES</div>
+        <ul class="solution-list">
+          <li>튜토리얼 직후 NEOZONE 미리보기·체험 삽입</li>
+          <li>핵심 팬 서비스를 초반 리텐션 훅으로 재배치</li>
+          <li>티저 방식으로 기대감 선행 형성</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="problem-item reveal stagger-2">
+      <div class="problem-header">
+        <div class="problem-tag">PROBLEM 03 · 재방문 훅</div>
+        <div class="problem-title">에너지 소진 후 재방문 유인 부재</div>
+        <div class="problem-desc">메인 루프(KWANGYA)가 에너지에 의존하므로, 에너지 소진 시 게임에 머무를 이유가 사라진다. LOBBY의 감성 인터랙션이 존재하지만 재방문을 능동적으로 유도하는 메커니즘은 없다.</div>
+      </div>
+      <div class="solution-side">
+        <div class="solution-label">DESIGN ALTERNATIVES</div>
+        <ul class="solution-list">
+          <li>일일 멤버 스케줄 알림 시스템</li>
+          <li>출석 스트릭 보상 구조</li>
+          <li>LOBBY 전용 일일 미션으로 에너지 독립 방문 동기 생성</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="problem-item reveal stagger-3">
+      <div class="problem-header">
+        <div class="problem-tag">PROBLEM 04 · 수집 완성</div>
+        <div class="problem-title">천장 부재 · SSR 확률 불투명</div>
+        <div class="problem-desc">팬덤 게임에서 "내가 원하는 멤버 카드를 반드시 얻을 수 있다"는 믿음은 수집 지속 동기의 핵심이다. 천장 시스템 부재와 불투명한 SSR 확률은 이 믿음을 위협하고 과금 신뢰도를 훼손한다.</div>
+      </div>
+      <div class="solution-side">
+        <div class="solution-label">DESIGN ALTERNATIVES</div>
+        <ul class="solution-list">
+          <li>멤버별 천장 도입 (N회 소환 시 SSR 보장)</li>
+          <li>확률 인앱 공시 의무화</li>
+          <li>픽업 시스템으로 원하는 멤버 선택 가능</li>
+        </ul>
+      </div>
+    </div>
+
+  </div>
+</section>
+
+<!-- ═══════════════════ 05 BM 설계 ═══════════════════ -->
+<div style="height:80px;background:linear-gradient(180deg,var(--bg) 0%,var(--card) 100%);"></div>
+<section class="section-card">
+  <div class="section-eyebrow reveal">05 — BUSINESS MODEL ANALYSIS</div>
+  <h2 class="section-title reveal">BM 설계 <em>분석</em></h2>
+  <div class="section-divider reveal"></div>
+
+  <div class="bm-layout">
+    <div class="bm-col">
+      <div class="bm-card reveal">
+        <div class="bm-card-title">현재 BM 구조 — 이중 과금 축</div>
+        <div class="bm-axes">
+          <span class="bm-axis-pill p">① 가챠 소환</span>
+          <span class="bm-axis-pill s">② 에너지 충전</span>
+        </div>
+        <p style="font-size:0.85rem;color:var(--text-muted);margin-top:0.8rem;">두 과금 축이 동시에 작동하여 팬덤의 수집 욕구(가챠)와 플레이 욕구(에너지)를 각각 공략하는 구조. 후반으로 갈수록 에너지 과금 압박이 증가한다.</p>
+      </div>
+      <div class="bm-card reveal stagger-1">
+        <div class="bm-card-title">핵심 지표</div>
+        <div style="display:flex;flex-direction:column;gap:0.8rem;margin-top:0.5rem;">
+          <div style="display:flex;justify-content:space-between;align-items:center;padding:0.6rem 0;border-bottom:1px solid rgba(224,64,251,0.08);">
+            <span style="font-size:0.85rem;color:var(--text-muted);">이벤트 기간 매출 증가</span>
+            <span style="font-family:'Bebas Neue',sans-serif;color:var(--gold);font-size:1.1rem;">+20~50%</span>
+          </div>
+          <div style="display:flex;justify-content:space-between;align-items:center;padding:0.6rem 0;border-bottom:1px solid rgba(224,64,251,0.08);">
+            <span style="font-size:0.85rem;color:var(--text-muted);">구독권 월정액</span>
+            <span style="font-family:'Bebas Neue',sans-serif;color:var(--accent2);font-size:1.1rem;">안정 수익원</span>
+          </div>
+          <div style="display:flex;justify-content:space-between;align-items:center;padding:0.6rem 0;">
+            <span style="font-size:0.85rem;color:var(--text-muted);">이벤트 부재 기간</span>
+            <span style="font-family:'Bebas Neue',sans-serif;color:#FF6B6B;font-size:1.1rem;">매출 급락</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="bm-col">
+      <div class="bm-card reveal stagger-2">
+        <div class="bm-card-title">유저 반응</div>
+        <div class="bm-reactions">
+          <div class="reaction-row">
+            <span class="reaction-badge pos">긍정</span>
+            <span class="reaction-text">초반 무료 보상이 관대하여 진입 장벽이 낮음</span>
+          </div>
+          <div class="reaction-row">
+            <span class="reaction-badge pos">긍정</span>
+            <span class="reaction-text">이벤트 기간 지급량이 많아 과금 없이도 수집 가능한 경험</span>
+          </div>
+          <div class="reaction-row">
+            <span class="reaction-badge neg">부정</span>
+            <span class="reaction-text">후반 에너지 소모 급증 — "과금 유도가 너무 노골적"</span>
+          </div>
+          <div class="reaction-row">
+            <span class="reaction-badge neg">부정</span>
+            <span class="reaction-text">SSR 확률 불투명 — "얼마를 써야 원하는 멤버가 나오나"</span>
+          </div>
+        </div>
+      </div>
+      <div class="bm-card reveal stagger-3">
+        <div class="bm-card-title">BM 개선 방향</div>
+        <ul class="solution-list" style="margin-top:0.5rem;">
+          <li>과금 축 단일화 — 에너지→가챠 패스 통합</li>
+          <li>천장 시스템 도입으로 수집 완성 가능성 보장</li>
+          <li>에너지 곡선 재설계 (로그 스케일)</li>
+          <li>이벤트 정기화로 매출 안정화</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <div class="insight-banner reveal">
+    팬덤 IP 게임의 BM은 "수집 완성이 가능하다는 믿음"이 핵심이다. 과금 모델이 그 믿음을 위협하는 순간, 팬덤은 게임이 아니라 굿즈로 돈을 쓰기 시작한다.
+  </div>
+</section>
+
+<!-- ═══════════════════ 06 KPI ═══════════════════ -->
+<div style="height:80px;background:linear-gradient(180deg,var(--card) 0%,var(--bg) 100%);"></div>
+<section class="section-dark">
+  <div class="section-eyebrow reveal">06 — KEY PERFORMANCE INDICATORS</div>
+  <h2 class="section-title reveal">핵심 성과 <em>지표</em></h2>
+  <div class="section-divider reveal"></div>
+
+  <div class="kpi-grid">
+    <div class="kpi-card reveal stagger-1">
+      <div class="kpi-glow"></div>
+      <div class="kpi-val">70%</div>
+      <div class="kpi-label">D+30 RETENTION</div>
+      <div class="kpi-sub">코어 팬덤 기준<br>산업 평균 대비 높은 지표</div>
+    </div>
+    <div class="kpi-card reveal stagger-2">
+      <div class="kpi-glow"></div>
+      <div class="kpi-val">400<span style="font-size:0.5em;">+</span></div>
+      <div class="kpi-label">MEMBER CARDS</div>
+      <div class="kpi-sub">장기 수집 목표 형성<br>멤버별 독립 가치 부여</div>
+    </div>
+    <div class="kpi-card reveal stagger-3">
+      <div class="kpi-glow"></div>
+      <div class="kpi-val">7.6</div>
+      <div class="kpi-label">TAPTAP SCORE</div>
+      <div class="kpi-sub">팬덤 지지 반영<br>대중 확장 여지 존재</div>
+    </div>
+    <div class="kpi-card reveal stagger-4">
+      <div class="kpi-glow"></div>
+      <div class="kpi-val">25</div>
+      <div class="kpi-label">NCT MEMBERS IP</div>
+      <div class="kpi-sub">서브 유닛 포함<br>수집 다양성 극대화</div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════ 07 문제점 대응표 ═══════════════════ -->
+<div style="height:80px;background:linear-gradient(180deg,var(--bg) 0%,var(--card) 100%);"></div>
+<section class="section-card">
+  <div class="section-eyebrow reveal">07 — PROBLEM & SOLUTION MATRIX</div>
+  <h2 class="section-title reveal">기획 문제점 <em>&amp; 대안</em></h2>
+  <div class="section-divider reveal"></div>
+
+  <div class="reveal" style="overflow-x:auto;">
+    <table class="prob-table">
+      <thead>
+        <tr>
+          <th>기획 영역</th>
+          <th>문제점</th>
+          <th>대안 방법</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>진행 곡선</td>
+          <td>초반 관대→후반 급증 불일치로 기대 배반</td>
+          <td class="alt-cell">로그 스케일 재설계 · 이벤트로 과금 분리</td>
+        </tr>
+        <tr>
+          <td>콘텐츠 개방</td>
+          <td>NEOZONE Lv.5 지연 — 핵심 팬 서비스 초반 미제공</td>
+          <td class="alt-cell">튜토리얼 직후 미리보기 · 티저 방식 도입</td>
+        </tr>
+        <tr>
+          <td>재방문 훅</td>
+          <td>에너지 소진 후 재방문 유인 부재</td>
+          <td class="alt-cell">일일 미션 · 스트릭 · 멤버 스케줄 알림</td>
+        </tr>
+        <tr>
+          <td>수집 완성</td>
+          <td>천장 부재 · SSR 확률 불투명</td>
+          <td class="alt-cell">천장 + 픽업 시스템 + 확률 공시</td>
+        </tr>
+        <tr>
+          <td>BM 구조</td>
+          <td>가챠 + 에너지 이중 과금 피로</td>
+          <td class="alt-cell">과금 축 단일화 · 통합 패스 도입</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<!-- ═══════════════════ 08 종합 결론 ═══════════════════ -->
+<div style="height:80px;background:linear-gradient(180deg,var(--card) 0%,var(--bg) 100%);"></div>
+<section class="conclusion-hero section-dark" style="padding:0;">
+  <div class="conclusion-mesh"></div>
+
+  <div style="padding:100px 8vw;position:relative;z-index:2;">
+    <div class="section-eyebrow reveal">08 — FINAL VERDICT</div>
+    <h2 class="section-title reveal">종합 <em>결론</em></h2>
+    <div class="section-divider reveal"></div>
+  </div>
+
+  <div style="padding:0 8vw 100px;position:relative;z-index:2;">
+    <div class="conclusion-verdict reveal">
+      <em>루프 설계 성공,</em><br>
+      진행 곡선 · BM 일관성 실패
+    </div>
+
+    <div style="max-width:750px;margin:0 auto 4rem;text-align:center;" class="reveal">
+      <p style="font-size:0.95rem;color:var(--text-muted);line-height:1.9;">
+        NCT ZONE은 팬덤 수집 루프와 3축 콘텐츠 구조 설계에서 분명한 성취를 보여준다. 수집 → 소유 → 감성 소비로 이어지는 루프는 팬덤의 심리와 정밀하게 정렬되어 있으며, D+30 리텐션 70%라는 수치가 이를 증명한다.
+        <br><br>
+        그러나 진행 곡선의 기대 배반, NEOZONE 개방 지연, 천장 부재라는 세 가지 구조적 결함은 장기 성장의 천장을 스스로 낮춘다. 팬덤 IP 게임에서 "수집 완성 가능성에 대한 믿음"은 BM의 근간이다. 이를 설계 단계에서 보장하지 못한 것이 가장 큰 기획적 아쉬움으로 남는다.
+      </p>
+    </div>
+
+    <div class="conclusion-kpis reveal">
+      <div class="concl-kpi">
+        <div class="num">루프 설계</div>
+        <div class="txt">팬덤 소유 욕구와 정밀 정렬</div>
+      </div>
+      <div class="concl-kpi">
+        <div class="num">D+30 = 70%</div>
+        <div class="txt">팬덤 코어 리텐션 성공</div>
+      </div>
+      <div class="concl-kpi">
+        <div class="num">3축 구조</div>
+        <div class="txt">차별화된 콘텐츠 역할 분리</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════ FOOTER ═══════════════════ -->
+<footer>
+  <div>
+    <div class="footer-brand">NCT ZONE</div>
+    <div class="footer-info" style="margin-top:0.5rem;">게임 기획자 시점 사후 분석 보고서</div>
+  </div>
+  <div class="footer-info" style="text-align:right;">
+    <div>분석 작성 2026.03</div>
+    <div style="margin-top:0.3rem;">본 보고서는 공개 데이터 및 플레이어 피드백 기반의 독립적 분석입니다</div>
+    <div style="margin-top:0.3rem;color:rgba(136,136,170,0.5);">NCT ZONE © SM Entertainment × NetEase</div>
+  </div>
+</footer>
+
+<script>
+  // ── Custom Cursor ──
+  const dot = document.getElementById('cursor-dot');
+  const ring = document.getElementById('cursor-ring');
+  let mx = 0, my = 0, rx = 0, ry = 0;
+
+  document.addEventListener('mousemove', e => {
+    mx = e.clientX; my = e.clientY;
+    dot.style.left = mx + 'px';
+    dot.style.top = my + 'px';
+  });
+
+  function animRing() {
+    rx += (mx - rx) * 0.12;
+    ry += (my - ry) * 0.12;
+    ring.style.left = rx + 'px';
+    ring.style.top = ry + 'px';
+    requestAnimationFrame(animRing);
+  }
+  animRing();
+
+  document.querySelectorAll('a, button, .loop-card, .kpi-card, .axis-card').forEach(el => {
+    el.addEventListener('mouseenter', () => {
+      dot.style.transform = 'translate(-50%, -50%) scale(2.5)';
+      ring.style.transform = 'translate(-50%, -50%) scale(1.5)';
+      ring.style.borderColor = 'rgba(224,64,251,0.7)';
+    });
+    el.addEventListener('mouseleave', () => {
+      dot.style.transform = 'translate(-50%, -50%) scale(1)';
+      ring.style.transform = 'translate(-50%, -50%) scale(1)';
+      ring.style.borderColor = 'rgba(0,229,255,0.5)';
+    });
+  });
+
+  // ── Scroll Reveal (IntersectionObserver) ──
+  const revealEls = document.querySelectorAll('.reveal, .reveal-left, .reveal-right');
+
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        entry.target.classList.add('visible');
+      }
+    });
+  }, { threshold: 0.12, rootMargin: '0px 0px -60px 0px' });
+
+  revealEls.forEach(el => observer.observe(el));
+
+  // ── Parallax on hero ──
+  const heroDeco = document.querySelector('.hero-deco-num');
+  const heroMesh = document.querySelector('.hero-mesh');
+
+  window.addEventListener('scroll', () => {
+    const sy = window.scrollY;
+    if (heroDeco) heroDeco.style.transform = `translateY(calc(-50% + ${sy * 0.3}px))`;
+    if (heroMesh) heroMesh.style.transform = `translateY(${sy * 0.15}px)`;
+  }, { passive: true });
+
+  // ── Animate KPI numbers on scroll ──
+  function animateCount(el, target, suffix = '', duration = 1500) {
+    const start = performance.now();
+    const isFloat = String(target).includes('.');
+    const from = 0;
+
+    function update(now) {
+      const elapsed = now - start;
+      const progress = Math.min(elapsed / duration, 1);
+      const eased = 1 - Math.pow(1 - progress, 3);
+      const current = from + (target - from) * eased;
+      el.textContent = isFloat ? current.toFixed(1) : Math.round(current);
+      if (progress < 1) requestAnimationFrame(update);
+      else el.textContent = isFloat ? target.toFixed(1) : target;
+    }
+    requestAnimationFrame(update);
+  }
+
+  const kpiObserver = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        const el = entry.target;
+        const raw = el.dataset.target;
+        if (!raw) return;
+        animateCount(el, parseFloat(raw));
+        kpiObserver.unobserve(el);
+      }
+    });
+  }, { threshold: 0.5 });
+
+  document.querySelectorAll('.kpi-val[data-target]').forEach(el => kpiObserver.observe(el));
+
+  // Set data-target for KPI vals
+  const kpiVals = document.querySelectorAll('.kpi-val');
+  const targets = [70, 400, 7.6, 25];
+  kpiVals.forEach((el, i) => {
+    if (targets[i] !== undefined) {
+      const inner = el.querySelector('span');
+      const suffix = inner ? inner.outerHTML : '';
+      el.dataset.target = targets[i];
+      el.dataset.suffix = suffix;
+    }
+  });
+</script>
+</body>
+</html>
